@@ -1,0 +1,1275 @@
+/* ==================== 修仙之路 - 全局样式 ==================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Serif SC', 'SimSun', 'STSong', serif;
+    background: #0a0a0f;
+    color: #c8c8d0;
+    min-height: 100vh;
+    background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(40, 20, 80, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(20, 40, 80, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(60, 20, 40, 0.15) 0%, transparent 50%);
+}
+
+#app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ==================== 标题栏 ==================== */
+
+.game-header {
+    position: relative;
+    text-align: center;
+    padding: 20px 0 10px;
+    border-bottom: 1px solid rgba(200, 160, 80, 0.2);
+    margin-bottom: 20px;
+}
+
+.game-header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #f0d070, #c8a050, #f0d070);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 8px;
+}
+
+.game-header .subtitle {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+    letter-spacing: 4px;
+}
+
+/* ==================== 按钮通用 ==================== */
+
+button {
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    cursor: pointer;
+    border: 1px solid rgba(200, 160, 80, 0.3);
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(200, 160, 80, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* ==================== 状态面板 ==================== */
+
+.status-panel {
+    background: rgba(20, 15, 30, 0.8);
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.status-item .label {
+    color: #888;
+}
+
+.status-item .value {
+    color: #f0d070;
+    font-weight: 700;
+}
+
+.status-item .value.danger {
+    color: #e05050;
+}
+
+.status-item .value.success {
+    color: #50c878;
+}
+
+/* 修为进度条 */
+.progress-bar {
+    flex: 1;
+    min-width: 150px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a90d9, #f0d070);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #888;
+}
+
+/* ==================== NPC关系栏 ==================== */
+
+.npc-bar {
+    background: rgba(20, 15, 30, 0.6);
+    border: 1px solid rgba(100, 100, 150, 0.15);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+}
+
+.npc-bar .npc-bar-title {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+    letter-spacing: 2px;
+}
+
+.npc-bar .npc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.npc-bar .npc-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.npc-bar .npc-tag:hover {
+    border-color: rgba(200, 160, 80, 0.3);
+    background: rgba(200, 160, 80, 0.05);
+}
+
+.npc-bar .npc-tag.positive {
+    color: #50c878;
+    background: rgba(80, 200, 120, 0.08);
+}
+
+.npc-bar .npc-tag.negative {
+    color: #e05050;
+    background: rgba(224, 80, 80, 0.08);
+}
+
+.npc-bar .npc-tag.neutral {
+    color: #888;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.npc-bar .npc-tag.dead {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+/* ==================== 预设事件区 ==================== */
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.event-btn {
+    background: rgba(30, 25, 50, 0.8);
+    border: 1px solid rgba(200, 160, 80, 0.15);
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: #c8c8d0;
+    text-align: left;
+    transition: all 0.2s;
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.event-btn:hover {
+    background: rgba(50, 40, 80, 0.8);
+    border-color: rgba(200, 160, 80, 0.4);
+}
+
+.event-btn .event-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f0d070;
+    margin-bottom: 4px;
+}
+
+.event-btn .event-desc {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.4;
+}
+
+.event-btn .event-cost {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* ==================== 自定义行动区 ==================== */
+
+.custom-action {
+    margin-bottom: 16px;
+}
+
+.custom-action .input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.custom-action input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    border-radius: 6px;
+    background: rgba(20, 15, 30, 0.6);
+    color: #c8c8d0;
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.custom-action input:focus {
+    border-color: rgba(200, 160, 80, 0.5);
+}
+
+.custom-action input::placeholder {
+    color: #555;
+}
+
+.btn-execute {
+    background: linear-gradient(135deg, #4a2d6e, #6b3fa0);
+    color: #f0d070;
+    border: 1px solid rgba(200, 160, 80, 0.3);
+    padding: 10px 24px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.btn-execute:hover {
+    background: linear-gradient(135deg, #5a3d7e, #7b4fb0);
+}
+
+/* ==================== 事件日志 ==================== */
+
+.log-panel {
+    background: rgba(10, 8, 18, 0.8);
+    border: 1px solid rgba(100, 100, 150, 0.1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.log-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.log-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.log-panel::-webkit-scrollbar-thumb {
+    background: rgba(200, 160, 80, 0.2);
+    border-radius: 2px;
+}
+
+.log-entry {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+/* ==================== 序章/结局特殊样式 ==================== */
+
+.story-screen {
+    background: rgba(10, 8, 18, 0.9);
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 20px 0;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.story-screen .story-title {
+    font-size: 22px;
+    color: #f0d070;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 900;
+    letter-spacing: 4px;
+}
+
+.story-screen .story-text {
+    font-size: 15px;
+    line-height: 2;
+    color: #c8c8d0;
+    white-space: pre-wrap;
+}
+
+.story-screen .story-choices {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.story-screen .story-choices button {
+    padding: 10px 28px;
+    background: rgba(40, 30, 60, 0.8);
+    color: #f0d070;
+    font-size: 15px;
+    letter-spacing: 2px;
+    min-width: 120px;
+}
+
+.story-screen .story-choices button:hover {
+    background: rgba(60, 45, 90, 0.8);
+}
+
+/* ==================== 死亡/飞升结局 ==================== */
+
+.end-screen {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.end-screen .end-title {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.end-screen .end-title.death {
+    color: #e05050;
+}
+
+.end-screen .end-title.flyup {
+    color: #f0d070;
+}
+
+.end-screen .end-text {
+    font-size: 15px;
+    line-height: 2;
+    color: #aaa;
+    white-space: pre-wrap;
+    max-width: 600px;
+    margin: 0 auto 30px;
+}
+
+.btn-restart {
+    background: linear-gradient(135deg, #4a2d6e, #6b3fa0);
+    color: #f0d070;
+    font-size: 16px;
+    padding: 12px 36px;
+    letter-spacing: 4px;
+    font-weight: 700;
+}
+
+/* ==================== 弹窗（NPC详情） ==================== */
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-content {
+    background: #1a1528;
+    border: 1px solid rgba(200, 160, 80, 0.3);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-content h3 {
+    color: #f0d070;
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.modal-content .npc-title-line {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.modal-content .npc-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.modal-content .npc-info-item {
+    font-size: 13px;
+}
+
+.modal-content .npc-info-item .il {
+    color: #666;
+}
+
+.modal-content .npc-info-item .iv {
+    color: #c8c8d0;
+}
+
+.modal-content .history-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.modal-content .history-item {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    color: #999;
+}
+
+.modal-close {
+    float: right;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 20px;
+    padding: 0 4px;
+}
+
+.modal-close:hover {
+    color: #f0d070;
+}
+
+/* ==================== NPC交互按钮 ==================== */
+
+.npc-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 14px;
+}
+
+.action-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 6px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid rgba(200, 160, 80, 0.25);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.chat-btn {
+    background: linear-gradient(135deg, #2a1a4e, #4a2d6e);
+    color: #f0d070;
+}
+
+.chat-btn:hover {
+    background: linear-gradient(135deg, #3a2a5e, #5a3d8e);
+}
+
+.meet-btn {
+    background: linear-gradient(135deg, #1a3a2a, #2a5a3a);
+    color: #70d0a0;
+}
+
+.meet-btn:hover {
+    background: linear-gradient(135deg, #2a4a3a, #3a6a4a);
+}
+
+.date-btn {
+    background: linear-gradient(135deg, #4a1a3a, #6a2a4a);
+    color: #f0a0c0;
+}
+
+.date-btn:hover {
+    background: linear-gradient(135deg, #5a2a4a, #7a3a5a);
+}
+
+.spar-btn {
+    background: linear-gradient(135deg, #3a2a1a, #5a3a2a);
+    color: #d0a070;
+}
+
+.spar-btn:hover {
+    background: linear-gradient(135deg, #4a3a2a, #6a4a3a);
+}
+
+/* ==================== 自动修行按钮 ==================== */
+
+.auto-play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(20, 15, 30, 0.4);
+    color: #888;
+}
+
+.auto-play-btn:hover {
+    background: rgba(40, 30, 60, 0.4);
+    transform: translateY(-1px);
+    color: #aaa;
+}
+
+.auto-play-btn.active {
+    background: rgba(30, 50, 30, 0.3);
+    color: #80c080;
+    border-color: rgba(100, 200, 100, 0.2);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.auto-play-btn.active:hover {
+    background: rgba(40, 60, 40, 0.3);
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(100, 200, 100, 0.1); }
+    50% { box-shadow: 0 0 15px rgba(100, 200, 100, 0.3); }
+}
+
+/* ==================== 职业选择弹窗 ==================== */
+
+.career-modal-content {
+    max-width: 420px;
+    text-align: center;
+    padding: 30px;
+}
+
+.career-modal-content h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+    color: #f0d070;
+}
+
+/* ==================== 事件滚动公告栏 ==================== */
+
+.event-ticker {
+    display: flex;
+    align-items: center;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4e;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    height: 32px;
+}
+
+.ticker-icon {
+    flex-shrink: 0;
+    font-size: 14px;
+    margin-right: 8px;
+    color: #f0d070;
+}
+
+.ticker-track {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    flex: 1;
+    mask-image: linear-gradient(90deg, transparent 0, #000 3%, #000 97%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 3%, #000 97%, transparent 100%);
+}
+
+.ticker-track.scrolling {
+    animation: ticker-scroll 80s linear infinite;
+}
+
+.ticker-item {
+    display: inline-block;
+    font-size: 13px;
+    color: #ccc;
+    margin: 0 4px;
+    padding: 0 8px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+.ticker-item:last-child {
+    border-right: none;
+}
+
+@keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* ==================== NPC搭讪弹窗 ==================== */
+
+.encounter-modal-content {
+    max-width: 400px;
+    text-align: center;
+    padding: 28px;
+}
+
+.encounter-modal-content h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #b8d4f0;
+}
+
+/* ==================== NPC聊天弹窗 ==================== */
+
+.chat-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    max-width: 480px;
+    padding: 0;
+}
+
+.chat-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(200, 160, 80, 0.15);
+    flex-shrink: 0;
+}
+
+.chat-header h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 200px;
+}
+
+.chat-loading {
+    text-align: center;
+    color: #666;
+    font-size: 12px;
+    padding: 20px;
+}
+
+.chat-msg {
+    display: flex;
+    max-width: 85%;
+}
+
+.chat-msg-npc {
+    align-self: flex-start;
+}
+
+.chat-msg-player {
+    align-self: flex-end;
+}
+
+.chat-bubble {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    word-break: break-all;
+}
+
+.chat-bubble-npc {
+    background: rgba(30, 22, 50, 0.9);
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    color: #c8c8d0;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-bubble-player {
+    background: rgba(74, 45, 110, 0.5);
+    border: 1px solid rgba(200, 160, 80, 0.15);
+    color: #e0d8c0;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-extra {
+    font-size: 11px;
+    color: #888;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.chat-special {
+    text-align: center;
+    font-size: 13px;
+    color: #f0c060;
+    padding: 8px;
+    background: rgba(200, 160, 80, 0.08);
+    border-radius: 8px;
+    margin: 4px 0;
+}
+
+.chat-marry {
+    color: #f090c0;
+    background: rgba(240, 144, 192, 0.08);
+    font-size: 14px;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(200, 160, 80, 0.15);
+    flex-shrink: 0;
+    background: rgba(10, 8, 18, 0.6);
+}
+
+.chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    border-radius: 8px;
+    background: rgba(10, 8, 18, 0.8);
+    color: #c8c8d0;
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    font-size: 13px;
+    outline: none;
+    resize: none;
+    min-height: 36px;
+    max-height: 80px;
+}
+
+.chat-input:focus {
+    border-color: rgba(200, 160, 80, 0.4);
+}
+
+.chat-send-btn {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #4a2d6e, #6b3fa0);
+    color: #f0d070;
+    border: 1px solid rgba(200, 160, 80, 0.3);
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.chat-send-btn:hover {
+    background: linear-gradient(135deg, #5a3d7e, #7b4fb0);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ==================== 响应式 ==================== */
+
+@media (max-width: 600px) {
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .story-screen {
+        padding: 20px;
+    }
+
+    .story-screen .story-text {
+        font-size: 14px;
+    }
+}
+
+/* ==================== 动画 ==================== */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.loading {
+    animation: pulse 1.5s ease infinite;
+    color: #888;
+}
+
+/* ==================== 额外状态 ==================== */
+
+.realm-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    background: rgba(200, 160, 80, 0.15);
+    color: #f0d070;
+    border: 1px solid rgba(200, 160, 80, 0.2);
+}
+
+.empty-state {
+    text-align: center;
+    color: #555;
+    padding: 20px;
+    font-size: 13px;
+}
+
+/* ==================== 用户栏 ==================== */
+
+.header-user {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #888;
+}
+
+.header-logout {
+    background: none;
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    color: #888;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.header-logout:hover {
+    color: #e05050;
+    border-color: rgba(224, 80, 80, 0.4);
+}
+
+/* ==================== 登录界面 ==================== */
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 20px;
+}
+
+.login-panel {
+    background: rgba(20, 15, 30, 0.9);
+    border: 1px solid rgba(200, 160, 80, 0.25);
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+}
+
+.login-title {
+    font-size: 26px;
+    font-weight: 900;
+    color: #f0d070;
+    letter-spacing: 6px;
+    margin-bottom: 6px;
+}
+
+.login-subtitle {
+    font-size: 13px;
+    color: #666;
+    letter-spacing: 3px;
+    margin-bottom: 28px;
+}
+
+.login-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border: 1px solid rgba(200, 160, 80, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.login-tab {
+    flex: 1;
+    padding: 8px 0;
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 14px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.login-tab.active {
+    background: rgba(200, 160, 80, 0.1);
+    color: #f0d070;
+}
+
+.login-tab:hover {
+    color: #c8c8d0;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.login-input {
+    padding: 10px 14px;
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    border-radius: 6px;
+    background: rgba(10, 8, 18, 0.8);
+    color: #c8c8d0;
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.login-input:focus {
+    border-color: rgba(200, 160, 80, 0.5);
+}
+
+.login-input::placeholder {
+    color: #555;
+}
+
+.login-error {
+    font-size: 12px;
+    color: #e05050;
+    min-height: 18px;
+    line-height: 18px;
+}
+
+.login-btn {
+    padding: 10px 0;
+    background: linear-gradient(135deg, #4a2d6e, #6b3fa0);
+    color: #f0d070;
+    border: 1px solid rgba(200, 160, 80, 0.3);
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #5a3d7e, #7b4fb0);
+    transform: translateY(-1px);
+}
+
+/* ==================== 关系等级标签 ==================== */
+
+.rel-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    margin-left: 6px;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.rel-badge.rel-enemy {
+    background: rgba(224, 80, 80, 0.2);
+    color: #e05050;
+    border: 1px solid rgba(224, 80, 80, 0.3);
+}
+
+.rel-badge.rel-hate {
+    background: rgba(200, 100, 80, 0.15);
+    color: #d08060;
+    border: 1px solid rgba(200, 100, 80, 0.25);
+}
+
+.rel-badge.rel-cold {
+    background: rgba(100, 120, 160, 0.15);
+    color: #8090b0;
+    border: 1px solid rgba(100, 120, 160, 0.25);
+}
+
+.rel-badge.rel-neutral {
+    background: rgba(200, 200, 200, 0.1);
+    color: #999;
+    border: 1px solid rgba(200, 200, 200, 0.2);
+}
+
+.rel-badge.rel-friend {
+    background: rgba(80, 200, 120, 0.15);
+    color: #60c890;
+    border: 1px solid rgba(80, 200, 120, 0.25);
+}
+
+.rel-badge.rel-dao {
+    background: rgba(80, 160, 240, 0.15);
+    color: #60b0f0;
+    border: 1px solid rgba(80, 160, 240, 0.25);
+}
+
+.rel-badge.rel-close {
+    background: rgba(200, 160, 80, 0.2);
+    color: #f0c060;
+    border: 1px solid rgba(200, 160, 80, 0.3);
+}
+
+.rel-badge.rel-partner {
+    background: rgba(240, 100, 150, 0.2);
+    color: #f090c0;
+    border: 1px solid rgba(240, 100, 150, 0.35);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ==================== 结为道侣按钮 ==================== */
+
+.partner-btn {
+    background: linear-gradient(135deg, #6a1a3a, #9a2a5a) !important;
+    color: #ffd0e0 !important;
+    border-color: rgba(240, 100, 150, 0.4) !important;
+    flex: 2 !important;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.partner-btn:hover {
+    background: linear-gradient(135deg, #7a2a4a, #aa3a6a) !important;
+    box-shadow: 0 4px 16px rgba(240, 100, 150, 0.3) !important;
+}
+
+/* ==================== 聊天道侣提示 ==================== */
+
+.chat-partner-hint {
+    color: #f090c0 !important;
+    background: rgba(240, 100, 150, 0.1) !important;
+    border: 1px solid rgba(240, 100, 150, 0.2);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ==================== 三栏布局 ==================== */
+
+/* 四维属性条 */
+.attr-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.attr-box {
+    background: rgba(15, 12, 25, 0.7);
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 8px 6px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.attr-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.attr-label {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+}
+
+.attr-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.game-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    gap: 16px;
+    align-items: start;
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.left-panel .status-panel {
+    margin-bottom: 0;
+}
+
+.left-panel .npc-bar {
+    margin-bottom: 0;
+}
+
+.center-panel {
+    min-width: 0;
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.event-panel {
+    background: rgba(10, 8, 18, 0.8);
+    border: 1px solid rgba(100, 100, 150, 0.1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    max-height: 500px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.event-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.event-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.event-panel::-webkit-scrollbar-thumb {
+    background: rgba(200, 160, 80, 0.2);
+    border-radius: 2px;
+}
+
+.event-panel-title {
+    font-size: 12px;
+    color: #666;
+    letter-spacing: 2px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
+
+.event-entry {
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.2s;
+}
+
+.event-entry:last-child {
+    border-bottom: none;
+}
+
+.event-entry.breakthrough {
+    background: rgba(240, 200, 80, 0.08);
+    border: 1px solid rgba(240, 200, 80, 0.2);
+    color: #f0d070;
+    font-weight: 700;
+    margin: 4px 0;
+}
+
+.event-entry.breakthrough .event-verdict {
+    display: block;
+    font-weight: 400;
+    font-size: 12px;
+    color: #c8a050;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: rgba(200, 160, 80, 0.08);
+    border-radius: 4px;
+    border-left: 2px solid rgba(200, 160, 80, 0.3);
+}
+
+.event-entry.breakthrough .event-verdict::before {
+    content: '📜 ';
+}
+
+.event-entry.important {
+    background: rgba(100, 200, 255, 0.06);
+    border: 1px solid rgba(100, 200, 255, 0.1);
+    color: #80c8f0;
+}
+
+.event-entry.fade-in {
+    animation: fadeIn 0.4s ease;
+}
+
+@media (max-width: 900px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
+    .right-panel .event-panel {
+        max-height: 300px;
+    }
+}

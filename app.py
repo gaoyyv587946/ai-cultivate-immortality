@@ -30,7 +30,7 @@ from game.database import get_all_achievements, get_player_achievements
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 # 随机密钥，用于session加密（本地游戏，固定即可）
-app.secret_key = "sk-ee323663b0dc44d4ba637aec3829c22b"
+app.secret_key = "your-api-key-here"
 
 # 确保数据库已初始化
 init_database()

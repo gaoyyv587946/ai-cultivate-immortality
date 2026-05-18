@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修仙之路 - 重生穿越文字冒险</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="app">
+        <div class="game-header">
+            <h1>修 仙 之 路</h1>
+            <div class="subtitle">重 生 穿 越 · 文 字 冒 险</div>
+            <div id="header-user" class="header-user" style="display:none;">
+                <span id="header-username"></span>
+                <span class="header-links">
+                    <a href="javascript:void(0)" onclick="showRankingModal()">灵石排行榜</a>
+                    <a href="javascript:void(0)" onclick="showAchievementModal()">🏆 成就</a>
+                    <a href="/admin" id="admin-link" style="display:none;">管理后台</a>
+                </span>
+                <button class="header-logout" onclick="handleLogout()">登出</button>
+            </div>
+        </div>
+        <div id="main-content">
+            <!-- 随机事件滚动公告栏 -->
+            <div class="event-ticker" id="event-ticker" style="display:none;">
+                <span class="ticker-icon">📢</span>
+                <div class="ticker-track" id="ticker-track"></div>
+            </div>
+            <div class="empty-state" style="text-align:center;padding:40px;">
+                <div class="loading">天道运转中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NPC详情弹窗 -->
+    <div class="modal-overlay" id="npc-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeNpcModal()">&times;</button>
+            <h3 id="modal-npc-name"></h3>
+            <div class="npc-title-line" id="modal-npc-title"></div>
+            <div class="npc-info-grid">
+                <div class="npc-info-item">
+                    <span class="il">境界</span>：<span class="iv" id="modal-npc-realm"></span>
+                </div>
+                <div class="npc-info-item">
+                    <span class="il">性别</span>：<span class="iv" id="modal-npc-gender"></span>
+                </div>
+                <div class="npc-info-item">
+                    <span class="il">关系度</span>：<span class="iv" id="modal-npc-relation"></span>
+                    <span id="modal-npc-rel-label" class="rel-badge"></span>
+                </div>
+                <div class="npc-info-item">
+                    <span class="il">状态</span>：<span class="iv" id="modal-npc-status"></span>
+                </div>
+                <div class="npc-info-item">
+                    <span class="il">初遇</span>：<span class="iv" id="modal-npc-firstmet"></span>
+                </div>
+                <div class="npc-info-item" id="modal-npc-affection-row" style="display:none;">
+                    <span class="il">性格</span>：<span class="iv" id="modal-npc-affection"></span>
+                </div>
+                <div class="npc-info-item" id="modal-npc-shared-row" style="display:none;">
+                    <span class="il">共享修为</span>：<span class="iv" id="modal-npc-shared"></span>
+                </div>
+            </div>
+            <div style="margin-bottom: 12px; font-size: 13px; color: #aaa;" id="modal-npc-backstory"></div>
+            <div class="npc-action-buttons">
+                <button class="action-btn chat-btn" id="modal-chat-btn" onclick="openChatModal()">💬 交谈</button>
+                <button class="action-btn meet-btn" id="modal-meet-btn" onclick="handleMeetNpc()">🤝 见面</button>
+                <button class="action-btn date-btn" id="modal-date-btn" onclick="handleDateNpc()">🌹 约会</button>
+                <button class="action-btn spar-btn" id="modal-spar-btn" onclick="handleSparNpc()">⚔️ 切磋</button>
+                <button class="action-btn partner-btn" id="modal-partner-btn" style="display:none;" onclick="handleBecomePartner()">💞 结为道侣</button>
+                <button class="action-btn meet-btn" id="modal-sworn-btn" style="display:none;" onclick="handleBecomeSwornBrother()">🤝 结拜</button>
+            </div>
+            <div style="font-size: 13px; color: #888; margin-bottom: 8px;">互动历史</div>
+            <div class="history-list" id="modal-npc-history"></div>
+        </div>
+    </div>
+
+    <!-- NPC搭讪弹窗 -->
+    <div class="modal-overlay" id="encounter-modal">
+        <div class="modal-content encounter-modal-content">
+            <h3>💬 NPC搭讪</h3>
+            <p id="encounter-text" style="color:#ddd; margin:16px 0; line-height:1.6; font-size:15px;"></p>
+            <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;">
+                <button class="action-btn chat-btn" id="encounter-respond-btn">💬 回应</button>
+                <button class="action-btn spar-btn" onclick="closeEncounterModal()">✋ 忽略</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 灵石排行榜弹窗 -->
+    <div class="modal-overlay" id="ranking-modal">
+        <div class="modal-content" style="max-width:450px;">
+            <button class="modal-close" onclick="closeRankingModal()">&times;</button>
+            <h3 style="margin:0 0 12px; color:#f0d070;">🏆 灵石排行榜</h3>
+            <div style="max-height:400px; overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #3a3a5e; color:#888; font-size:13px;">
+                            <th style="padding:6px; text-align:center;">排名</th>
+                            <th style="padding:6px; text-align:left;">道友</th>
+                            <th style="padding:6px; text-align:center;">境界</th>
+                            <th style="padding:6px; text-align:right;">灵石</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body">
+                        <tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 职业选择弹窗 -->
+    <div class="modal-overlay" id="career-modal">
+        <div class="modal-content career-modal-content">
+            <h3>🎓 大学即将毕业</h3>
+            <p style="color:#ccc; margin:12px 0; line-height:1.6;">
+                你即将从大学毕业，面临人生的重大选择：<br>
+                <strong>飞升</strong>：继续读研深造，追求更高的境界<br>
+                <strong>上班</strong>：进入社会，随机加入一家公司工作
+            </p>
+            <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;">
+                <button class="action-btn chat-btn" onclick="handleCareerChoice('飞升')">📚 飞升（读研）</button>
+                <button class="action-btn meet-btn" onclick="handleCareerChoice('上班')">💼 上班</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模拟考试弹窗 -->
+    <div class="modal-overlay" id="exam-modal">
+        <div class="modal-content" style="max-width:520px;">
+            <button class="modal-close" onclick="closeExamModal()">&times;</button>
+            <h3 style="margin:0 0 8px; color:#f0d070;">📝 模拟考试</h3>
+            <div id="exam-body">
+                <div id="exam-question-area">
+                    <div id="exam-subject" style="font-size:12px; color:#888; margin-bottom:8px;"></div>
+                    <div id="exam-question-text" style="color:#ddd; font-size:16px; line-height:1.7; margin-bottom:12px;"></div>
+                    <div id="exam-hint" style="color:#666; font-size:13px; font-style:italic; margin-bottom:16px; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:6px; border-left:2px solid rgba(240,200,80,0.2);"></div>
+                    <textarea id="exam-answer-input" placeholder="输入你的答案..." maxlength="500" rows="3" style="width:100%; background:rgba(10,8,18,0.8); border:1px solid rgba(100,100,150,0.2); border-radius:6px; padding:10px 12px; color:#ddd; font-size:14px; resize:vertical; box-sizing:border-box;"></textarea>
+                    <div style="display:flex; gap:12px; justify-content:center; margin-top:16px;">
+                        <button class="action-btn chat-btn" id="exam-submit-btn" onclick="submitExam()">📩 交卷</button>
+                        <button class="action-btn spar-btn" onclick="closeExamModal()">✋ 放弃</button>
+                    </div>
+                </div>
+                <div id="exam-result-area" style="display:none;">
+                    <div id="exam-score-display" style="text-align:center; font-size:48px; font-weight:700; margin:16px 0;"></div>
+                    <div id="exam-comment" style="color:#ddd; font-size:15px; line-height:1.6; text-align:center; margin-bottom:12px;"></div>
+                    <div id="exam-reward" style="color:#888; font-size:13px; text-align:center; margin-bottom:16px; padding:8px; background:rgba(255,255,255,0.03); border-radius:6px;"></div>
+                    <div id="exam-reference-answer" style="display:none; margin-bottom:12px; padding:10px 14px; background:rgba(200,100,50,0.1); border-left:3px solid #c86432; border-radius:4px; font-size:13px; color:#ddd; line-height:1.5;">
+                        <span id="exam-reference-text"></span>
+                    </div>
+                    <div style="display:flex; gap:12px; justify-content:center; margin-top:16px;">
+                        <button class="action-btn chat-btn" onclick="closeExamModal()">✅ 确认</button>
+                    </div>
+                </div>
+            </div>
+            <div id="exam-loading" style="display:none; text-align:center; padding:32px 0; color:#888;">
+                <div style="font-size:32px; margin-bottom:8px;">📖</div>
+                <div>天道正在阅卷中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 小游戏弹窗 -->
+    <div class="modal-overlay" id="minigame-modal">
+        <div class="modal-content" style="max-width:480px;">
+            <button class="modal-close" onclick="closeMinigameModal()">&times;</button>
+            <h3 style="margin:0 0 12px; color:#80d0f0;">🎮 <span id="minigame-title">小游戏</span></h3>
+            <div id="minigame-body">
+                <div id="minigame-play-area">
+                    <div id="minigame-desc" style="color:#aaa; font-size:14px; line-height:1.6; margin-bottom:16px; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:6px;"></div>
+                    <div id="minigame-actions" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:12px;"></div>
+                    <div id="minigame-result" style="color:#ddd; font-size:14px; line-height:1.6; margin:12px 0; padding:8px 12px; background:rgba(0,0,0,0.2); border-radius:6px; min-height:24px;"></div>
+                    <div style="display:flex; gap:12px; justify-content:center; margin-top:16px;">
+                        <button class="action-btn talk-btn" id="minigame-action-btn" style="display:none;">🎯 确认</button>
+                        <button class="action-btn spar-btn" id="minigame-giveup-btn" onclick="giveupMinigame()">🏳️ 放弃游戏</button>
+                    </div>
+                </div>
+                <div id="minigame-giveup-result" style="display:none; text-align:center; padding:20px 0;">
+                    <div style="font-size:48px; margin-bottom:12px;">💀</div>
+                    <div id="minigame-penalty-text" style="color:#e05050; font-size:15px; line-height:1.6; margin-bottom:8px;"></div>
+                    <div style="margin-top:16px;">
+                        <button class="action-btn chat-btn" onclick="closeMinigameModal(true)">✅ 确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NPC聊天弹窗 -->
+    <div class="modal-overlay" id="npc-chat-modal">
+        <div class="modal-content chat-modal-content">
+            <button class="modal-close" onclick="closeChatModal()">&times;</button>
+            <div class="chat-header">
+                <div>
+                    <h3 id="chat-npc-name"></h3>
+                    <div class="npc-title-line" id="chat-npc-relation"></div>
+                </div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-loading">加载历史记录中...</div>
+            </div>
+            <div class="chat-input-area" id="chat-input-area">
+                <textarea id="chat-input" class="chat-input" placeholder="输入你想说的话..." maxlength="200" rows="2"></textarea>
+                <button class="chat-send-btn" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="modal-overlay" id="achievement-modal">
+        <div class="modal-content" style="max-width:550px;">
+            <button class="modal-close" onclick="closeAchievementModal()">&times;</button>
+            <h3 style="margin:0 0 12px; color:#f0d070;">🏆 成就列表</h3>
+            <div id="achievement-body" style="max-height:420px; overflow-y:auto;">
+                <div style="text-align:center; padding:20px; color:#666;">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生活事件弹窗 -->
+    <div class="modal-overlay" id="life-event-modal">
+        <div class="modal-content" style="max-width:520px;">
+            <button class="modal-close" onclick="closeLifeEventModal()">&times;</button>
+            <div id="life-event-body">
+                <div id="life-event-display">
+                    <h3 id="life-event-title" style="margin:0 0 8px;"></h3>
+                    <div id="life-event-icon" style="font-size:48px; text-align:center; margin:8px 0;"></div>
+                    <div id="life-event-desc" style="color:#ddd; font-size:15px; line-height:1.7; margin:12px 0; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:6px;"></div>
+                    <div style="font-size:13px; color:#888; margin:12px 0 8px;">【选择行动】</div>
+                    <div id="life-event-options" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+                    <div style="border-top:1px solid rgba(100,100,150,0.15); margin:12px 0; padding-top:12px;">
+                        <div style="font-size:13px; color:#888; margin-bottom:8px;">【自定义行动】</div>
+                        <div class="input-group">
+                            <input type="text" id="life-event-custom-input" placeholder="输入你的应对方式..." style="flex:1; background:rgba(10,8,18,0.8); border:1px solid rgba(100,100,150,0.2); border-radius:6px; padding:10px 12px; color:#ddd; font-size:14px;">
+                            <button class="btn-execute" onclick="submitLifeEventCustomAction()">执行</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="life-event-result" style="display:none;">
+                    <div id="life-event-result-icon" style="font-size:48px; text-align:center; margin:8px 0;"></div>
+                    <div id="life-event-comment" style="color:#ffb347; font-size:16px; font-weight:bold; text-align:center; margin:8px 0; padding:8px 12px; background:rgba(255,180,50,0.08); border-radius:6px;"></div>
+                    <div id="life-event-result-text" style="color:#ddd; font-size:15px; line-height:1.7; margin:12px 0; padding:14px 16px; background:rgba(255,255,255,0.03); border-radius:6px;"></div>
+                    <div id="life-event-reward-text" style="color:#f0d070; font-size:14px; text-align:center; margin:8px 0;"></div>
+                    <div style="display:flex; gap:12px; justify-content:center; margin-top:16px;">
+                        <button class="action-btn chat-btn" onclick="closeLifeEventModal()">✅ 确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 随机事件弹窗 -->
+    <div class="modal-overlay" id="random-event-modal">
+        <div class="modal-content" style="max-width:480px;">
+            <button class="modal-close" onclick="closeRandomEventModal()">&times;</button>
+            <div id="random-event-body" style="text-align:center; padding:10px 0;">
+                <div id="random-event-icon" style="font-size:64px; margin:12px 0;"></div>
+                <h3 id="random-event-title" style="margin:0 0 12px; font-size:20px;"></h3>
+                <div id="random-event-desc" style="color:#ddd; font-size:15px; line-height:1.7; margin:12px 0; padding:14px 16px; background:rgba(255,255,255,0.03); border-radius:6px;"></div>
+                <div id="random-event-reward" style="color:#f0d070; font-size:14px; margin:8px 0;"></div>
+                <div style="display:flex; gap:12px; justify-content:center; margin-top:16px;">
+                    <button class="action-btn chat-btn" onclick="closeRandomEventModal()">✅ 确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就通知 -->
+    <div id="achievement-notification" style="display:none; position:fixed; top:20px; right:20px; z-index:9999; max-width:350px; background:rgba(20,15,30,0.95); border:1px solid rgba(240,208,112,0.3); border-radius:10px; padding:16px 20px; box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+
+    <script>
+        // ==================== 初始状态（由服务端渲染注入） ====================
+        const INITIAL_STATE = {{ initial_state | tojson }};
+
+        // ==================== 登录界面渲染 ====================
+
+        let authMode = 'login';
+        let currentChatNpcId = null;
+        let currentChatNpcName = '';
+        let currentNpcGender = '';
+        let currentNpcRelation = 0;
+        let currentNpcWantPartner = false;
+        let isChatSending = false;
+        let autoPlayInterval = null;
+        let autoPlayEnabled = false;
+        let currentGameState = null;
+
+        function renderLogin(state) {
+            return `
+                <div class="login-container fade-in">
+                    <div class="login-panel">
+                        <div class="login-title">登 录 道 场</div>
+                        <div class="login-subtitle">踏入修仙之路</div>
+                        <div class="login-tabs">
+                            <button class="login-tab ${authMode === 'login' ? 'active' : ''}"
+                                    onclick="switchAuthMode('login')">登录</button>
+                            <button class="login-tab ${authMode === 'register' ? 'active' : ''}"
+                                    onclick="switchAuthMode('register')">注册</button>
+                        </div>
+                        <div class="login-form">
+                            <input type="text" id="auth-username" class="login-input"
+                                   placeholder="道号" maxlength="20"
+                                   onkeydown="if(event.key==='Enter') document.getElementById('auth-password').focus()">
+                            <input type="password" id="auth-password" class="login-input"
+                                   placeholder="法诀" maxlength="30"
+                                   onkeydown="if(event.key==='Enter') handleAuth()">
+                            <div id="auth-error" class="login-error"></div>
+                            <button class="login-btn" onclick="handleAuth()">
+                                ${authMode === 'login' ? '踏入道途' : '凝练法身'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('auth-error').textContent = '';
+            renderGame({ phase: 'login' });
+        }
+
+        async function handleAuth() {
+            const username = document.getElementById('auth-username').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            const errorEl = document.getElementById('auth-error');
+
+            if (!username) {
+                errorEl.textContent = '请输入道号';
+                return;
+            }
+            if (!password) {
+                errorEl.textContent = '请输入法诀';
+                return;
+            }
+
+            const url = authMode === 'login' ? '/api/login' : '/api/register';
+            const result = await apiPost(url, { username, password });
+
+            if (result && result.success) {
+                if (result.game_state) {
+                    renderGame(result.game_state);
+                } else {
+                    await loadGameAfterAuth();
+                }
+            } else if (result) {
+                errorEl.textContent = result.message || '操作失败';
+            } else {
+                errorEl.textContent = '网络错误，请重试';
+            }
+        }
+
+        async function loadGameAfterAuth() {
+            const state = await apiGet('/api/state');
+            if (state && state.phase) {
+                renderGame(state);
+            } else {
+                renderGame({ phase: 'login' });
+            }
+        }
+
+        async function handleLogout() {
+            await apiPost('/api/logout', {});
+            authMode = 'login';
+            renderGame({ phase: 'login' });
+        }
+
+        // ==================== 核心渲染函数 ====================
+
+        function renderGame(state) {
+            currentGameState = state;
+            const container = document.getElementById('main-content');
+            const headerUser = document.getElementById('header-user');
+            const usernameEl = document.getElementById('header-username');
+
+            if (state.phase === 'login') {
+                container.innerHTML = renderLogin(state);
+                if (headerUser) headerUser.style.display = 'none';
+                stopAutoPlay();
+            } else {
+                if (headerUser) {
+                    headerUser.style.display = 'block';
+                    if (usernameEl && state.username) {
+                        usernameEl.textContent = '☯ ' + state.username;
+                    } else {
+                        fetchUsername();
+                    }
+                }
+                if (state.phase === 'prelude') {
+                    container.innerHTML = renderPrelude(state);
+                    stopAutoPlay();
+                } else if (state.phase === 'cultivation') {
+                    container.innerHTML = renderCultivation(state);
+                } else if (state.phase === 'ended') {
+                    container.innerHTML = renderEnd(state);
+                    stopAutoPlay();
+                }
+            }
+            // 尝试更新NPC关系栏
+            setTimeout(() => updateNpcBar(state.npcs || []), 50);
+        }
+
+        async function fetchUsername() {
+            const data = await apiGet('/api/check_session');
+            if (data && data.logged_in) {
+                const el = document.getElementById('header-username');
+                if (el) el.textContent = '☯ ' + data.username;
+                const hu = document.getElementById('header-user');
+                if (hu) hu.style.display = 'block';
+                const link = document.getElementById('admin-link');
+                if (link) link.style.display = data.is_admin ? 'inline' : 'none';
+            }
+        }
+
+        // ==================== 序章渲染 ====================
+
+        function renderPrelude(state) {
+            const step = state.prelude_step;
+            if (!step) return '<div class="empty-state">正在加载故事...</div>';
+
+            const choicesHtml = (step.choices || []).map((choice, index) =>
+                `<button onclick="handlePreludeChoice(${index})">${choice.label}</button>`
+            ).join('');
+
+            return `
+                <div class="story-screen fade-in">
+                    <div class="story-title">${step.title}</div>
+                    <div class="story-text">${step.text}</div>
+                    <div class="story-choices">${choicesHtml}</div>
+                </div>
+            `;
+        }
+
+        // ==================== 修仙阶段渲染 ====================
+
+        function renderCultivation(state) {
+            const p = state.player;
+
+            if (!p.is_alive) {
+                state.phase = 'ended';
+                return renderEnd(state);
+            }
+
+            const statusHtml = `
+                <div class="status-panel">
+                    <div class="status-item">
+                        <span class="label">境界</span>
+                        <span class="value">${p.school_name}（${p.realm_name}）</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">修为</span>
+                        <span class="value">${p.cultivation} / ${p.breakthrough_threshold}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width: ${p.progress}%"></div>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">寿命</span>
+                        <span class="value ${p.remaining_lifespan < p.max_lifespan * 0.2 ? 'danger' : ''}">${p.remaining_lifespan}</span>
+                        <span class="label">/ ${p.max_lifespan} 年</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">回合</span>
+                        <span class="value">${p.turn_count}</span>
+                    </div>
+                    ${p.career_path === '上班' && p.company_name ? `
+                    <div class="status-item">
+                        <span class="label">公司</span>
+                        <span class="value">${p.company_name}</span>
+                    </div>` : ''}
+                    ${p.career_path === '飞升' ? `
+                    <div class="status-item">
+                        <span class="label">路线</span>
+                        <span class="value">飞升（读研）</span>
+                    </div>` : ''}
+                </div>
+            `;
+
+            const npcBarHtml = `<div id="npc-bar-container"></div>`;
+
+             const autoBtnText = autoPlayEnabled ? '⏸ 自动修行中...' : '▶ 自动修行';
+             const autoBtnHtml = `
+                 <div style="display:flex; gap:6px; align-items:center; margin:4px 0;">
+                     <button id="auto-play-btn" class="auto-play-btn ${autoPlayEnabled ? 'active' : ''}"
+                             onclick="toggleAutoPlay()">${autoBtnText}</button>
+                     <span style="font-size:11px; color:#555;">
+                         ${autoPlayEnabled ? '随机选择修行活动，突破/重要事件时自动停止' : '开启后自动选择修行活动'}
+                     </span>
+                 </div>
+             `;
+
+             currentEvents = state.events || [];
+             let eventsHtml = '<div class="events-grid">';
+            if (state.events) {
+                state.events.forEach(evt => {
+                    const costText = evt.lifespan_cost > 0 ? `消耗 ${evt.lifespan_cost} 年寿命` : '无消耗';
+                    eventsHtml += `
+                        <button class="event-btn" onclick="handlePresetEvent('${evt.name}')">
+                            <div class="event-name">${evt.name}</div>
+                            <div class="event-desc">${evt.description}</div>
+                            <div class="event-cost">${costText}</div>
+                        </button>
+                    `;
+                });
+            }
+            eventsHtml += '</div>';
+
+            const customHtml = `
+                <div class="custom-action">
+                    <div class="input-group">
+                        <input type="text" id="custom-action-input"
+                               placeholder="输入你的行动，天道将判定其合理性..."
+                               onkeydown="if(event.key==='Enter') handleCustomAction()">
+                        <button class="btn-execute" onclick="handleCustomAction()">执 行</button>
+                    </div>
+                </div>
+            `;
+
+            let eventPanelHtml = '<div class="event-panel"><div class="event-panel-title">📜 事 件 记 录</div>';
+            if (p.logs && p.logs.length > 0) {
+                const logs = [...p.logs].reverse();
+                logs.forEach(log => {
+                    const rawMsg = log.message;
+                    let cls = 'event-entry fade-in';
+                    if (rawMsg.includes('⚡')) {
+                        cls += ' breakthrough';
+                        const verdictIdx = rawMsg.indexOf('\n📜 ');
+                        if (verdictIdx !== -1) {
+                            const mainPart = escapeHtml(rawMsg.substring(0, verdictIdx));
+                            const verdictPart = escapeHtml(rawMsg.substring(verdictIdx + 1));
+                            eventPanelHtml += `<div class="${cls}">${mainPart}<span class="event-verdict">${verdictPart}</span></div>`;
+                            return;
+                        }
+                    }
+                    eventPanelHtml += `<div class="${cls}">${escapeHtml(rawMsg)}</div>`;
+                });
+            } else {
+                eventPanelHtml += '<div style="text-align:center;color:#555;padding:16px;font-size:12px;">暂无事件记录</div>';
+            }
+            eventPanelHtml += '</div>';
+
+            const attrHtml = `
+                <div class="attr-bar">
+                    <div class="attr-box" style="border-color: rgba(60, 120, 240, 0.3);">
+                        <div class="attr-label">🧠 智力</div>
+                        <div class="attr-value" style="color: #60a0f0;">${p.intelligence}</div>
+                    </div>
+                    <div class="attr-box" style="border-color: rgba(80, 200, 120, 0.3);">
+                        <div class="attr-label">💪 体力</div>
+                        <div class="attr-value" style="color: #60d080;">${p.stamina}</div>
+                    </div>
+                    <div class="attr-box" style="border-color: rgba(240, 160, 80, 0.3);">
+                        <div class="attr-label">⚔️ 力量</div>
+                        <div class="attr-value" style="color: #f0a050;">${p.strength}</div>
+                    </div>
+                    <div class="attr-box" style="border-color: rgba(200, 120, 240, 0.3);">
+                        <div class="attr-label">✨ 精神</div>
+                        <div class="attr-value" style="color: #c080f0;">${p.spirit}</div>
+                    </div>
+                </div>
+            `;
+            return `
+                <div class="game-layout">
+                    <div class="left-panel">
+                        ${statusHtml}
+                        ${npcBarHtml}
+                    </div>
+                    <div class="center-panel">
+                        <div class="fade-in">
+                            ${attrHtml}
+                            <div style="font-size:13px; color:#888; margin:12px 0 8px; letter-spacing:2px;">【修行活动】</div>
+                            ${eventsHtml}
+                            <div style="font-size:13px; color:#888; margin:12px 0 8px; letter-spacing:2px;">【自定义行动】</div>
+                            ${customHtml}
+                            ${autoBtnHtml}
+                        </div>
+                    </div>
+                    <div class="right-panel">
+                        ${eventPanelHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== NPC关系栏更新 ====================
+
+        function updateNpcBar(npcs) {
+            const container = document.getElementById('npc-bar-container');
+            if (!container) return;
+
+            if (!npcs || npcs.length === 0) {
+                container.innerHTML = `
+                    <div class="npc-bar">
+                        <div class="npc-bar-title">👥 重 要 关 系</div>
+                        <div class="empty-state">尚未结识任何人</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const sorted = [...npcs].sort((a, b) => Math.abs(b.relationship) - Math.abs(a.relationship));
+            const top = sorted.slice(0, 6);
+
+            const tagsHtml = top.map(npc => {
+                let cls = 'neutral';
+                if (npc.relationship > 0) cls = 'positive';
+                else if (npc.relationship < 0) cls = 'negative';
+                if (!npc.is_alive) cls += ' dead';
+
+                const symbol = npc.symbol || '⚪';
+                const genderSymbol = npc.gender === 'female' ? '♀' : '♂';
+                let status = '';
+                if (!npc.is_alive) {
+                    status = '💀';
+                } else if (npc.married) {
+                    status = npc.married;
+                } else if (npc.is_sworn_brother) {
+                    status = '🤝';
+                }
+                return `<span class="npc-tag ${cls}" onclick="showNpcDetail(${npc.id})">
+                    ${symbol} ${npc.name}${status} <span style="font-size:11px;color:#888;">${genderSymbol}</span> (${npc.relationship > 0 ? '+' : ''}${npc.relationship})
+                </span>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="npc-bar">
+                    <div class="npc-bar-title">👥 重 要 关 系</div>
+                    <div class="npc-list">${tagsHtml}</div>
+                </div>
+            `;
+        }
+
+        // ==================== 结局渲染 ====================
+
+        function renderEnd(state) {
+            const p = state.player;
+            const deathData = state.death || {};
+
+            let title, titleClass, text;
+
+            if (deathData.is_flyup) {
+                title = '🌟 飞 升 成 功 🌟';
+                titleClass = 'flyup';
+                text = deathData.scene || '你成功飞升仙界！';
+            } else if (deathData.scene) {
+                title = '☠️ 道 途 已 尽';
+                titleClass = 'death';
+                text = deathData.scene;
+                text += `\n\n=== 修行总结 ===\n`;
+                text += `最终境界：${p.school_name}（${p.realm_name}）\n`;
+                text += `最终修为：${p.cultivation}\n`;
+                text += `总回合数：${p.turn_count}\n`;
+                text += `享年：${p.max_lifespan} 岁`;
+            } else {
+                title = '☠️ 道 途 已 尽';
+                titleClass = 'death';
+                text = '你的修仙之路到此为止。';
+                text += `\n\n=== 修行总结 ===\n`;
+                text += `最终境界：${p.school_name}（${p.realm_name}）\n`;
+                text += `最终修为：${p.cultivation}\n`;
+                text += `总回合数：${p.turn_count}\n`;
+                text += `享年：${p.max_lifespan} 岁`;
+            }
+
+            return `
+                <div class="end-screen fade-in">
+                    <div class="end-title ${titleClass}">${title}</div>
+                    <div class="end-text">${text}</div>
+                    <button class="btn-restart" onclick="startNewGame()">重 入 轮 回</button>
+                </div>
+            `;
+        }
+
+        // ==================== 事件滚动公告栏 ====================
+
+        const eventTickerMessages = [];
+        const MAX_TICKER_ITEMS = 20;
+
+        function addTickerMessage(msg) {
+            if (!msg) return;
+            eventTickerMessages.push(msg);
+            if (eventTickerMessages.length > MAX_TICKER_ITEMS) {
+                eventTickerMessages.shift();
+            }
+            updateTicker();
+        }
+
+        function updateTicker() {
+            const ticker = document.getElementById('event-ticker');
+            const track = document.getElementById('ticker-track');
+            if (!ticker || !track) return;
+            if (eventTickerMessages.length === 0) {
+                ticker.style.display = 'none';
+                return;
+            }
+            ticker.style.display = 'flex';
+            const items = eventTickerMessages.map(m =>
+                `<span class="ticker-item">${m}</span>`
+            ).join('');
+            track.innerHTML = items + items;
+            if (eventTickerMessages.length > 5) {
+                track.classList.add('scrolling');
+            } else {
+                track.classList.remove('scrolling');
+            }
+        }
+
+        let lastGlobalEventId = 0;
+
+        async function pollGlobalEvents() {
+            try {
+                const resp = await fetch('/api/global_events');
+                if (!resp.ok) return;
+                const events = await resp.json();
+                if (!events || events.length === 0) return;
+                const newEvents = events.filter(e => e.id > lastGlobalEventId);
+                if (newEvents.length === 0) return;
+                lastGlobalEventId = events[0].id;
+        const iconMap = { '突破': '⚡', '结为道侣': '💞', '结拜': '🤝', '奇遇': '✨', '邂逅': '💬', '成就': '🏆' };
+        const icon = (type) => iconMap[type] || '📢';
+        for (let i = newEvents.length - 1; i >= 0; i--) {
+            addTickerMessage(`${icon(newEvents[i].event_type)} ${newEvents[i].description}`);
+        }
+            } catch (e) { /* 静默 */ }
+        }
+
+        function collectTickerMessages(result) {
+            if (!result) return;
+            if (result.event && result.description) {
+                addTickerMessage(`📖 ${result.description}`);
+            }
+            if (result.random_event) {
+                const re = result.random_event;
+                const msg = re.description || re.message || '';
+                if (msg) addTickerMessage(`✨ ${msg}`);
+            }
+            if (result.realm_random_event) {
+                const re = result.realm_random_event;
+                const msg = re.description || re.event_name || '';
+                if (msg) addTickerMessage(`🌌 ${msg}`);
+            }
+            if (result.npc_interaction) {
+                addTickerMessage(`👤 ${result.npc_interaction.message || ''}`);
+            }
+            if (result.npc_encounter) {
+                addTickerMessage(`💬 ${result.npc_encounter.opening_line || ''}`);
+            }
+            if (result.breakthrough && result.breakthrough.message) {
+                addTickerMessage(`⚡ ${result.breakthrough.message}`);
+            }
+            if (result.partner_share) {
+                if (Array.isArray(result.partner_share)) {
+                    result.partner_share.forEach(function(ps) {
+                        if (ps.message) addTickerMessage(`💞 ${ps.message}`);
+                    });
+                } else if (result.partner_share.message) {
+                    addTickerMessage(`💞 ${result.partner_share.message}`);
+                }
+            }
+            if (result.death) {
+                addTickerMessage(`💀 ${result.death.message || '道友已陨落'}`);
+            }
+        }
+
+        // ==================== NPC搭讪处理 ====================
+
+        function closeEncounterModal() {
+            document.getElementById('encounter-modal').classList.remove('show');
+        }
+
+        function showEncounterModal(encounter) {
+            document.getElementById('encounter-text').textContent = encounter.opening_line;
+            currentChatNpcId = encounter.npc_id;
+            currentChatNpcName = encounter.npc_name;
+            const respondBtn = document.getElementById('encounter-respond-btn');
+            respondBtn.onclick = function() {
+                closeEncounterModal();
+                openChatModal();
+            };
+            document.getElementById('encounter-modal').classList.add('show');
+        }
+
+        // ==================== 职业路线选择 ====================
+
+        async function handleCareerChoice(path) {
+            document.getElementById('career-modal').classList.remove('show');
+            stopAutoPlay();
+            const result = await apiPost('/api/career/choose', { path });
+            if (result && result.success) {
+                renderGame(result.game_state);
+            }
+        }
+
+        // ==================== API 调用 ====================
+
+        async function apiPost(url, data) {
+            try {
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await resp.json();
+            } catch (e) {
+                console.error('API Error:', e);
+                return null;
+            }
+        }
+
+        async function apiGet(url) {
+            try {
+                const resp = await fetch(url);
+                return await resp.json();
+            } catch (e) {
+                console.error('API Error:', e);
+                return null;
+            }
+        }
+
+        // ==================== 操作处理 ====================
+
+        async function handlePreludeChoice(index) {
+            const result = await apiPost('/api/prelude', { choice_index: index });
+            if (result) {
+                renderGame(result);
+                scrollToTop();
+            }
+        }
+
+        let currentExamQuestion = null;
+        let currentExamMode = 'exam';
+        let currentEvents = [];
+
+        async function handlePresetEvent(eventName) {
+            const evt = currentEvents.find(e => e.name === eventName);
+            if (evt && evt.subject) {
+                startSubjectExam(evt.subject);
+                return;
+            }
+            if (evt && evt.game) {
+                if (evt.game === 'exam') {
+                    startExam();
+                    return;
+                }
+                startMinigame(evt.name, evt.description);
+                return;
+            }
+            const result = await apiPost('/api/action/preset', { event_name: eventName });
+            if (result) {
+                collectTickerMessages(result);
+                renderGame(result);
+                handleSpecialResults(result);
+                scrollToTop();
+            }
+        }
+
+        function closeExamModal() {
+            document.getElementById('exam-modal').classList.remove('show');
+            currentExamQuestion = null;
+            currentExamMode = 'exam';
+            document.getElementById('exam-reference-answer').style.display = 'none';
+        }
+
+        async function startExam() {
+            currentExamMode = 'exam';
+            currentExamQuestion = null;
+            document.getElementById('exam-question-area').style.display = 'block';
+            document.getElementById('exam-result-area').style.display = 'none';
+            document.getElementById('exam-loading').style.display = 'block';
+            document.getElementById('exam-modal').classList.add('show');
+            document.getElementById('exam-reference-answer').style.display = 'none';
+
+            const resp = await apiPost('/api/exam/start', {});
+            if (!resp || !resp.success) {
+                document.getElementById('exam-loading').style.display = 'none';
+                document.getElementById('exam-question-area').style.display = 'block';
+                document.getElementById('exam-question-text').textContent = '出题失败，请稍后再试。';
+                document.getElementById('exam-subject').textContent = '';
+                document.getElementById('exam-hint').textContent = '';
+                document.getElementById('exam-submit-btn').style.display = 'none';
+                return;
+            }
+
+            const q = resp.question;
+            currentExamQuestion = q;
+            document.getElementById('exam-subject').textContent = '📖 科目：' + (q.subject || '综合');
+            document.getElementById('exam-question-text').textContent = q.q;
+            document.getElementById('exam-hint').textContent = '💡 ' + (q.hint || '认真思考后作答');
+            document.getElementById('exam-answer-input').value = '';
+            document.getElementById('exam-submit-btn').style.display = 'inline-block';
+
+            document.getElementById('exam-loading').style.display = 'none';
+            document.getElementById('exam-question-area').style.display = 'block';
+            document.getElementById('exam-answer-input').focus();
+        }
+
+        async function startSubjectExam(subject) {
+            currentExamMode = 'subject';
+            currentExamQuestion = null;
+            document.getElementById('exam-question-area').style.display = 'block';
+            document.getElementById('exam-result-area').style.display = 'none';
+            document.getElementById('exam-loading').style.display = 'block';
+            document.getElementById('exam-modal').classList.add('show');
+            document.getElementById('exam-reference-answer').style.display = 'none';
+
+            const resp = await apiPost('/api/exam/subject', { subject: subject });
+            if (!resp || !resp.success) {
+                document.getElementById('exam-loading').style.display = 'none';
+                document.getElementById('exam-question-area').style.display = 'block';
+                document.getElementById('exam-question-text').textContent = '出题失败，请稍后再试。';
+                document.getElementById('exam-subject').textContent = '';
+                document.getElementById('exam-hint').textContent = '';
+                document.getElementById('exam-submit-btn').style.display = 'none';
+                return;
+            }
+
+            const q = resp.question;
+            currentExamQuestion = q;
+            document.getElementById('exam-subject').textContent = '📖 ' + (q.subject || subject);
+            document.getElementById('exam-question-text').textContent = q.q;
+            document.getElementById('exam-hint').textContent = '💡 ' + (q.hint || '认真思考后作答');
+            document.getElementById('exam-answer-input').value = '';
+            document.getElementById('exam-submit-btn').style.display = 'inline-block';
+
+            document.getElementById('exam-loading').style.display = 'none';
+            document.getElementById('exam-question-area').style.display = 'block';
+            document.getElementById('exam-answer-input').focus();
+        }
+
+        async function submitExam() {
+            const answer = document.getElementById('exam-answer-input').value.trim();
+            if (!answer) {
+                document.getElementById('exam-answer-input').focus();
+                document.getElementById('exam-answer-input').style.borderColor = 'rgba(200,60,60,0.5)';
+                setTimeout(() => {
+                    document.getElementById('exam-answer-input').style.borderColor = 'rgba(100,100,150,0.2)';
+                }, 1000);
+                return;
+            }
+
+            document.getElementById('exam-question-area').style.display = 'none';
+            document.getElementById('exam-loading').style.display = 'block';
+            document.getElementById('exam-loading').querySelector('div:last-child').textContent = '天道正在阅卷中...';
+
+            const endpoint = currentExamMode === 'subject' ? '/api/exam/subject_judge' : '/api/exam/submit';
+            const resp = await apiPost(endpoint, {
+                question: currentExamQuestion,
+                answer: answer
+            });
+
+            document.getElementById('exam-loading').style.display = 'none';
+
+            if (!resp || !resp.success) {
+                document.getElementById('exam-question-area').style.display = 'block';
+                document.getElementById('exam-question-text').textContent = '提交失败，请稍后再试。';
+                return;
+            }
+
+            const r = resp.result;
+            document.getElementById('exam-result-area').style.display = 'block';
+
+            if (currentExamMode === 'subject') {
+                const isCorrect = r.correct;
+                document.getElementById('exam-score-display').textContent = isCorrect ? '✅ 回答正确！' : '❌ 回答错误';
+                document.getElementById('exam-score-display').style.color = isCorrect ? '#60d080' : '#e05050';
+                document.getElementById('exam-comment').textContent = r.comment || '';
+                document.getElementById('exam-reference-answer').style.display = isCorrect ? 'none' : 'block';
+                document.getElementById('exam-reference-text').textContent = '参考答案：' + (r.reference_answer || '无');
+            } else {
+                const scoreColor = r.score >= 80 ? '#60d080' : (r.score >= 50 ? '#f0d070' : '#e05050');
+                document.getElementById('exam-score-display').textContent = r.score + '分';
+                document.getElementById('exam-score-display').style.color = scoreColor;
+                document.getElementById('exam-comment').textContent = r.comment;
+                document.getElementById('exam-reference-answer').style.display = 'none';
+            }
+
+            let rewardText = `修为 +${r.cultivation_gain}`;
+            if (r.attr_text) {
+                rewardText += '，' + r.attr_text;
+            }
+            document.getElementById('exam-reward').textContent = '📈 ' + rewardText;
+
+            if (resp.game_state) {
+                renderGame(resp.game_state);
+            }
+
+            if (resp.random_event) {
+                setTimeout(() => showRandomEventModal(resp.random_event), 500);
+            }
+        }
+
+        document.getElementById('exam-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeExamModal();
+        });
+
+        // ====== 小游戏 ======
+        let currentMinigameName = null;
+        let currentMinigameState = null;
+
+        function closeMinigameModal(skipRender) {
+            document.getElementById('minigame-modal').classList.remove('show');
+            currentMinigameName = null;
+            currentMinigameState = null;
+            document.getElementById('minigame-giveup-result').style.display = 'none';
+            document.getElementById('minigame-play-area').style.display = 'block';
+        }
+
+        async function startMinigame(gameName, gameDesc) {
+            currentMinigameName = gameName;
+            currentMinigameState = null;
+            document.getElementById('minigame-title').textContent = gameName;
+            document.getElementById('minigame-desc').textContent = gameDesc || '';
+            document.getElementById('minigame-result').textContent = '';
+            document.getElementById('minigame-giveup-result').style.display = 'none';
+            document.getElementById('minigame-play-area').style.display = 'block';
+            document.getElementById('minigame-modal').classList.add('show');
+
+            const resp = await apiPost('/api/minigame/start', { game_name: gameName });
+            if (!resp || !resp.success) {
+                document.getElementById('minigame-result').textContent = '启动游戏失败。';
+                return;
+            }
+            currentMinigameState = resp.game_state_v2;
+            renderMinigameActions(resp.game_state_v2);
+        }
+
+        function renderMinigameActions(state) {
+            const actionsDiv = document.getElementById('minigame-actions');
+            const actionBtn = document.getElementById('minigame-action-btn');
+            actionsDiv.innerHTML = '';
+
+            if (!state || state.ended) {
+                document.getElementById('minigame-result').textContent = '游戏已结束。';
+                return;
+            }
+
+            const gameName = state.game || '';
+
+            if (gameName === '灵石猜猜看') {
+                showGuessGame(actionsDiv, actionBtn, state);
+            } else if (gameName === '灵兽捕捉') {
+                showBeastGame(actionsDiv, actionBtn, state);
+            } else if (gameName === '诗词接龙') {
+                showPoemGame(actionsDiv, actionBtn, state);
+            } else if (gameName === '炼丹小试') {
+                showPillGame(actionsDiv, actionBtn, state);
+            } else if (gameName === '秘境碎石') {
+                showMineGame(actionsDiv, actionBtn, state);
+            } else if (gameName === '奇遇骰子') {
+                showDiceGame(actionsDiv, actionBtn, state);
+            }
+        }
+
+        function showGuessGame(actionsDiv, actionBtn, state) {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = 1;
+            input.max = 10;
+            input.placeholder = '输入1-10的数字';
+            input.style.cssText = 'flex:1; min-width:120px; background:rgba(10,8,18,0.8); border:1px solid rgba(100,100,150,0.2); border-radius:6px; padding:10px 12px; color:#ddd; font-size:16px; text-align:center;';
+            actionsDiv.appendChild(input);
+
+            actionBtn.style.display = 'inline-block';
+            actionBtn.onclick = function() {
+                const val = input.value.trim();
+                if (!val) return;
+                doMinigameAction(val);
+            };
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') actionBtn.click();
+            });
+            input.focus();
+        }
+
+        function showBeastGame(actionsDiv, actionBtn, state) {
+            actionBtn.style.display = 'none';
+            const actions = ['攻击', '防御', '观察'];
+            actions.forEach(function(act) {
+                const btn = document.createElement('button');
+                btn.className = 'event-btn';
+                btn.textContent = act;
+                btn.onclick = function() { doMinigameAction(act); };
+                actionsDiv.appendChild(btn);
+            });
+        }
+
+        function showPoemGame(actionsDiv, actionBtn, state) {
+            actionBtn.style.display = 'none';
+            const prompt = document.createElement('div');
+            prompt.style.cssText = 'font-size:18px; color:#f0d070; margin-bottom:12px; text-align:center; padding:12px; background:rgba(240,208,112,0.08); border-radius:8px;';
+            prompt.textContent = '📜 ' + (state.first_half || '请接下一句：');
+            actionsDiv.appendChild(prompt);
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = '输入下一句诗词...';
+            input.style.cssText = 'flex:1; min-width:120px; background:rgba(10,8,18,0.8); border:1px solid rgba(100,100,150,0.2); border-radius:6px; padding:10px 12px; color:#ddd; font-size:16px; text-align:center;';
+            actionsDiv.appendChild(input);
+            actionBtn.style.display = 'inline-block';
+            actionBtn.onclick = function() {
+                const val = input.value.trim();
+                if (!val) return;
+                doMinigameAction(val);
+            };
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') actionBtn.click();
+            });
+            input.focus();
+        }
+
+        function showPillGame(actionsDiv, actionBtn, state) {
+            actionBtn.style.display = 'none';
+            const pillDisabled = state.ended;
+            const materials = state.materials || [
+                { name: '千年灵芝', cost: 10, power: 3 },
+                { name: '万年人参', cost: 15, power: 4 },
+                { name: '龙涎草', cost: 5, power: 2 },
+                { name: '凤凰羽', cost: 20, power: 5 },
+                { name: '冰晶花', cost: 8, power: 2 },
+                { name: '星辰砂', cost: 12, power: 3 }
+            ];
+            const statusText = document.createElement('div');
+            statusText.style.cssText = 'color:#888; font-size:13px; margin-bottom:8px; text-align:center;';
+            statusText.textContent = '选择2-3种材料，选好后点击「开炉」';
+            actionsDiv.appendChild(statusText);
+
+            materials.forEach(function(m) {
+                const btn = document.createElement('button');
+                btn.className = 'event-btn';
+                btn.style.cssText = 'padding:8px 12px; min-height:auto; font-size:13px;';
+                btn.textContent = m.name + ' (' + m.cost + '灵石, +' + m.power + '力)';
+                btn.disabled = pillDisabled;
+                btn.onclick = function() {
+                    doMinigameAction(m.name);
+                };
+                actionsDiv.appendChild(btn);
+            });
+
+            const fireBtn = document.createElement('button');
+            fireBtn.className = 'action-btn';
+            fireBtn.textContent = '🔥 开炉';
+            fireBtn.style.marginTop = '12px';
+            fireBtn.disabled = pillDisabled;
+            fireBtn.onclick = function() {
+                doMinigameAction('开炉');
+            };
+            actionsDiv.appendChild(fireBtn);
+        }
+
+        function showMineGame(actionsDiv, actionBtn, state) {
+            actionBtn.style.display = 'none';
+            const remaining = state.remaining !== undefined ? state.remaining : 5;
+            const mines = state.mines || [];
+            const countText = document.createElement('div');
+            countText.style.cssText = 'color:#888; font-size:14px; margin-bottom:8px; text-align:center;';
+            countText.textContent = '剩余挖掘次数：' + remaining;
+            actionsDiv.appendChild(countText);
+
+            const resultDiv = document.createElement('div');
+            resultDiv.id = 'mine-results';
+            resultDiv.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;';
+            mines.forEach(function(m) {
+                const tag = document.createElement('span');
+                tag.style.cssText = 'padding:4px 10px; border-radius:4px; font-size:12px; background:rgba(100,200,100,0.15); color:#8d8;';
+                tag.textContent = m;
+                resultDiv.appendChild(tag);
+            });
+            actionsDiv.appendChild(resultDiv);
+
+            const mineBtn = document.createElement('button');
+            mineBtn.className = 'action-btn';
+            mineBtn.textContent = '⛏️ 挖掘';
+            mineBtn.style.marginTop = '8px';
+            mineBtn.onclick = function() {
+                mineBtn.disabled = true;
+                mineBtn.textContent = '⛏️ 挖掘中...';
+                doMinigameAction('mine');
+            };
+            actionsDiv.appendChild(mineBtn);
+        }
+
+        function showDiceGame(actionsDiv, actionBtn, state) {
+            actionBtn.style.display = 'none';
+            const rollBtn = document.createElement('button');
+            rollBtn.className = 'action-btn';
+            rollBtn.textContent = '🎲 掷骰子';
+            rollBtn.style.fontSize = '20px';
+            rollBtn.style.padding = '16px 32px';
+            rollBtn.onclick = function() {
+                rollBtn.disabled = true;
+                rollBtn.textContent = '🎲 掷出中...';
+                doMinigameAction('roll');
+            };
+            actionsDiv.appendChild(rollBtn);
+        }
+
+        async function doMinigameAction(action) {
+            const resp = await apiPost('/api/minigame/action', {
+                game_name: currentMinigameName,
+                game_state_v2: currentMinigameState,
+                action: action
+            });
+            if (!resp || !resp.success) return;
+
+            const r = resp.result;
+            document.getElementById('minigame-result').textContent = r.result || '';
+
+            if (r.ended) {
+                document.getElementById('minigame-actions').innerHTML = '';
+                document.getElementById('minigame-action-btn').style.display = 'none';
+                document.getElementById('minigame-giveup-btn').style.display = 'none';
+                if (resp.game_state) {
+                    renderGame(resp.game_state);
+                }
+            } else {
+                currentMinigameState = resp.game_state_v2 || currentMinigameState;
+                renderMinigameActions(currentMinigameState);
+            }
+        }
+
+        async function giveupMinigame() {
+            document.getElementById('minigame-play-area').style.display = 'none';
+
+            const resp = await apiPost('/api/minigame/giveup', {});
+            if (!resp || !resp.success) {
+                document.getElementById('minigame-play-area').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('minigame-giveup-result').style.display = 'block';
+            document.getElementById('minigame-penalty-text').textContent =
+                '放弃游戏，受到惩罚：' + (resp.penalty ? resp.penalty.description : '无');
+
+            if (resp.game_state) {
+                renderGame(resp.game_state);
+            }
+        }
+
+        document.getElementById('minigame-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeMinigameModal(true);
+        });
+
+        async function handleCustomAction() {
+            const input = document.getElementById('custom-action-input');
+            if (!input) return;
+            const actionText = input.value.trim();
+            if (!actionText) return;
+
+            input.value = '';
+            input.placeholder = '天道正在感应...';
+            input.disabled = true;
+
+            const result = await apiPost('/api/action/custom', { action_text: actionText });
+            if (result) {
+                renderGame(result);
+                handleSpecialResults(result);
+                scrollToTop();
+            }
+
+            input.disabled = false;
+            input.placeholder = '输入你的行动，天道将判定其合理性...';
+        }
+
+        function handleSpecialResults(result) {
+            if (result.npc_encounter) {
+                showEncounterModal(result.npc_encounter);
+                return;
+            }
+            if (result.breakthrough && result.breakthrough.need_career_choice) {
+                stopAutoPlay();
+                document.getElementById('career-modal').classList.add('show');
+                return;
+            }
+            if (result.breakthrough && result.breakthrough.success) {
+                setTimeout(() => {
+                    const story = result.breakthrough.story || '';
+                    alert(`⚡ ${result.breakthrough.message}\n\n${story}`);
+                    renderGame(result);
+                }, 200);
+                return;
+            }
+            if (result.random_event) {
+                setTimeout(() => showRandomEventModal(result.random_event), 100);
+            }
+            if (result.life_event) {
+                setTimeout(() => showLifeEventModal(result.life_event), 300);
+            }
+            if (result.new_achievements && result.new_achievements.length > 0) {
+                setTimeout(() => showAchievementNotification(result.new_achievements), 500);
+            }
+        }
+
+        // ==================== 自动修行系统 ====================
+
+        function toggleAutoPlay() {
+            if (autoPlayEnabled) {
+                stopAutoPlay();
+            } else {
+                startAutoPlay();
+            }
+            const btn = document.getElementById('auto-play-btn');
+            if (btn) {
+                btn.textContent = autoPlayEnabled ? '⏸ 自动修行中...' : '▶ 自动修行';
+                btn.classList.toggle('active', autoPlayEnabled);
+            }
+        }
+
+        function startAutoPlay() {
+            if (!currentGameState || !currentGameState.events || currentGameState.events.length === 0) {
+                return;
+            }
+            autoPlayEnabled = true;
+
+            autoPlayInterval = setInterval(async () => {
+                if (!autoPlayEnabled || !currentGameState) {
+                    stopAutoPlay();
+                    return;
+                }
+
+                const events = currentGameState.events;
+                if (!events || events.length === 0) {
+                    stopAutoPlay();
+                    return;
+                }
+
+                if (currentGameState.player && !currentGameState.player.is_alive) {
+                    stopAutoPlay();
+                    return;
+                }
+
+                const randomEvent = events[Math.floor(Math.random() * events.length)];
+                const result = await apiPost('/api/action/preset', { event_name: randomEvent.name });
+
+                if (!result) return;
+
+                collectTickerMessages(result);
+
+                if (result.npc_encounter) {
+                    renderGame(result);
+                    stopAutoPlay();
+                    showEncounterModal(result.npc_encounter);
+                    return;
+                }
+
+                if (result.breakthrough && result.breakthrough.need_career_choice) {
+                    renderGame(result);
+                    stopAutoPlay();
+                    document.getElementById('career-modal').classList.add('show');
+                    return;
+                }
+
+                if (result.breakthrough && result.breakthrough.success) {
+                    renderGame(result);
+                    stopAutoPlay();
+                    setTimeout(() => {
+                        const story = result.breakthrough.story || '';
+                        alert(`⚡ ${result.breakthrough.message}\n\n${story}`);
+                        renderGame(result);
+                    }, 200);
+                    return;
+                }
+
+                if (result.death || (result.player && !result.player.is_alive)) {
+                    renderGame(result);
+                    stopAutoPlay();
+                    return;
+                }
+
+                renderGame(result);
+            }, 2500);
+        }
+
+        function stopAutoPlay() {
+            autoPlayEnabled = false;
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+            const btn = document.getElementById('auto-play-btn');
+            if (btn) {
+                btn.textContent = '▶ 自动修行';
+                btn.classList.remove('active');
+            }
+        }
+
+        // ==================== NPC详情弹窗 ====================
+
+        async function showNpcDetail(npcId) {
+            const data = await apiGet(`/api/npc/${npcId}`);
+            if (!data || data.error) return;
+
+            const npc = data.npc;
+            document.getElementById('modal-npc-name').textContent = npc.name;
+            document.getElementById('modal-npc-title').textContent = npc.title || '无称号';
+            document.getElementById('modal-npc-realm').textContent = `${npc.realm}（Lv.${npc.realm_level}）`;
+            document.getElementById('modal-npc-relation').textContent = npc.relationship;
+
+            // 关系等级标签
+            const relLabelEl = document.getElementById('modal-npc-rel-label');
+            if (npc.is_married && npc.relationship >= 80) {
+                relLabelEl.textContent = '道侣';
+                relLabelEl.className = 'rel-badge rel-partner';
+            } else if (npc.is_sworn_brother && npc.relationship >= 80) {
+                relLabelEl.textContent = '结拜兄弟';
+                relLabelEl.className = 'rel-badge rel-partner';
+            } else {
+                const relVal = npc.relationship;
+                let label = '中立', css = 'rel-neutral';
+                if (relVal >= 81) { label = '至交'; css = 'rel-close'; }
+                else if (relVal >= 61) { label = '道友'; css = 'rel-dao'; }
+                else if (relVal >= 31) { label = '朋友'; css = 'rel-friend'; }
+                else if (relVal >= 1) { label = '中立'; css = 'rel-neutral'; }
+                else if (relVal >= -19) { label = '冷淡'; css = 'rel-cold'; }
+                else if (relVal >= -49) { label = '厌恶'; css = 'rel-hate'; }
+                else { label = '仇人'; css = 'rel-enemy'; }
+                relLabelEl.textContent = label;
+                relLabelEl.className = 'rel-badge ' + css;
+            }
+
+            document.getElementById('modal-npc-gender').textContent = npc.gender === 'female' ? '女' : '男';
+            document.getElementById('modal-npc-status').textContent = npc.is_alive ? '存活' : '已故';
+            document.getElementById('modal-npc-firstmet').textContent = npc.first_met_at || '未知';
+            document.getElementById('modal-npc-backstory').textContent = npc.backstory || '暂无背景故事';
+
+            // 显示女NPC性格
+            const affectionRow = document.getElementById('modal-npc-affection-row');
+            const affectionEl = document.getElementById('modal-npc-affection');
+            if (npc.gender === 'female' && npc.affection_type) {
+                affectionRow.style.display = '';
+                affectionEl.textContent = npc.affection_type;
+            } else {
+                affectionRow.style.display = 'none';
+            }
+
+            // 显示共享修为（道侣/结拜可见）
+            const sharedRow = document.getElementById('modal-npc-shared-row');
+            const sharedEl = document.getElementById('modal-npc-shared');
+            if (npc.is_married || npc.is_sworn_brother) {
+                sharedRow.style.display = '';
+                sharedEl.textContent = (npc.shared_cultivation || 0) + ' 点';
+            } else {
+                sharedRow.style.display = 'none';
+            }
+
+            const historyList = document.getElementById('modal-npc-history');
+            if (data.history && data.history.length > 0) {
+                historyList.innerHTML = data.history.map(h =>
+                    `<div class="history-item">
+                        [${h.event_type}] ${escapeHtml(h.description)}
+                        <span style="color:#666;font-size:11px;">（关系${h.relationship_change >= 0 ? '+' : ''}${h.relationship_change}）</span>
+                    </div>`
+                ).join('');
+            } else {
+                historyList.innerHTML = '<div class="empty-state">暂无互动记录</div>';
+            }
+
+            // 存储当前NPC信息
+            currentChatNpcId = npc.id;
+            currentChatNpcName = npc.name;
+            currentNpcGender = npc.gender;
+            currentNpcRelation = npc.relationship;
+            currentNpcWantPartner = false;
+
+            const isAlive = npc.is_alive;
+            document.getElementById('modal-chat-btn').style.display = isAlive ? '' : 'none';
+            document.getElementById('modal-meet-btn').style.display = isAlive && npc.relationship >= -20 ? '' : 'none';
+            document.getElementById('modal-date-btn').style.display = isAlive && npc.gender === 'female' && npc.relationship >= 30 ? '' : 'none';
+            document.getElementById('modal-spar-btn').style.display = isAlive ? '' : 'none';
+
+            // 结为道侣按钮（仅女性NPC，未已婚且满足条件时显示）
+            const partnerBtn = document.getElementById('modal-partner-btn');
+            partnerBtn.style.display = 'none';
+            if (isAlive && !npc.is_married && npc.gender === 'female' && npc.relationship >= 80) {
+                partnerBtn.style.display = '';
+                partnerBtn.textContent = '💞 结为道侣';
+            }
+
+            // 结拜按钮（仅男性NPC，未结拜且满足条件时显示）
+            const swornBtn = document.getElementById('modal-sworn-btn');
+            swornBtn.style.display = 'none';
+            if (isAlive && !npc.is_sworn_brother && npc.gender === "male" && npc.relationship >= 80) {
+                swornBtn.style.display = "";
+                swornBtn.textContent = "🤝 结拜";
+            }
+
+            document.getElementById("npc-modal").classList.add("show");
+        }
+
+        function closeNpcModal() {
+            document.getElementById("npc-modal").classList.remove("show");
+        }
+
+        document.getElementById("npc-modal").addEventListener("click", function(e) {
+            if (e.target === this) closeNpcModal();
+        });
+
+        async function handleMeetNpc() {
+            closeNpcModal();
+            const result = await apiPost("/api/npc/meet", { npc_id: currentChatNpcId });
+            if (result) {
+                collectTickerMessages(result);
+                renderGame(result);
+                handleSpecialResults(result);
+            }
+        }
+
+        async function handleDateNpc() {
+            closeNpcModal();
+            const result = await apiPost("/api/npc/date", { npc_id: currentChatNpcId });
+            if (result) {
+                collectTickerMessages(result);
+                renderGame(result);
+                handleSpecialResults(result);
+            }
+        }
+
+        async function handleSparNpc() {
+            closeNpcModal();
+            const result = await apiPost("/api/npc/spar", { npc_id: currentChatNpcId });
+            if (result) {
+                collectTickerMessages(result);
+                renderGame(result);
+                handleSpecialResults(result);
+            }
+        }
+
+        async function handleBecomePartner() {
+            if (!confirm("确定要和 " + currentChatNpcName + " 结为道侣吗？")) return;
+            closeNpcModal();
+            const result = await apiPost("/api/npc/partner", { npc_id: currentChatNpcId });
+            if (result) {
+                collectTickerMessages(result);
+                renderGame(result);
+                handleSpecialResults(result);
+            }
+        }
+
+        async function handleBecomeSwornBrother() {
+            if (!confirm("确定要和 " + currentChatNpcName + " 结拜为兄弟吗？")) return;
+            closeNpcModal();
+            const result = await apiPost("/api/npc/sworn", { npc_id: currentChatNpcId });
+            if (result) {
+                collectTickerMessages(result);
+                renderGame(result);
+                handleSpecialResults(result);
+            }
+        }
+
+        // ==================== NPC聊天 ====================
+
+        function openChatModal() {
+            closeEncounterModal();
+            closeNpcModal();
+            document.getElementById("chat-npc-name").textContent = "与 " + currentChatNpcName + " 交谈";
+            document.getElementById("chat-npc-relation").textContent = "关系：" + currentNpcRelation;
+            document.getElementById("chat-messages").innerHTML = '<div class="chat-loading">加载历史记录中...</div>';
+            document.getElementById("chat-input").value = "";
+            document.getElementById("npc-chat-modal").classList.add("show");
+            loadChatHistory();
+        }
+
+        function closeChatModal() {
+            document.getElementById("npc-chat-modal").classList.remove("show");
+            currentChatNpcId = null;
+        }
+
+        document.getElementById("npc-chat-modal").addEventListener("click", function(e) {
+            if (e.target === this) closeChatModal();
+        });
+
+        async function loadChatHistory() {
+            if (!currentChatNpcId) return;
+            const data = await apiGet("/api/npc/" + currentChatNpcId + "/chat");
+            if (!data || data.error) {
+                document.getElementById("chat-messages").innerHTML = '<div class="chat-loading">加载失败</div>';
+                return;
+            }
+            const msgs = data.messages || [];
+            if (msgs.length === 0) {
+                document.getElementById("chat-messages").innerHTML = '<div class="chat-loading">还没有聊天记录，发送第一条消息吧</div>';
+            } else {
+                document.getElementById("chat-messages").innerHTML = msgs.map(function(m) {
+                    const cls = m.role === "user" ? "chat-msg user-msg" : "chat-msg npc-msg";
+                    return '<div class="' + cls + '">' + escapeHtml(m.content) + '</div>';
+                }).join("");
+            }
+            document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("chat-input");
+            const text = input.value.trim();
+            if (!text || !currentChatNpcId || isChatSending) return;
+
+            isChatSending = true;
+            input.disabled = true;
+            document.getElementById("chat-messages").innerHTML += '<div class="chat-msg user-msg">' + escapeHtml(text) + '</div>';
+            document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+            input.value = "";
+
+            const result = await apiPost("/api/npc/chat", { npc_id: currentChatNpcId, message: text });
+
+            if (result && result.success) {
+                document.getElementById("chat-messages").innerHTML += '<div class="chat-msg npc-msg">' + escapeHtml(result.reply) + '</div>';
+                if (result.new_relationship !== undefined) {
+                    currentNpcRelation = result.new_relationship;
+                    document.getElementById("chat-npc-relation").textContent = "关系：" + result.new_relationship;
+                }
+            } else {
+                document.getElementById("chat-messages").innerHTML += '<div class="chat-msg npc-msg">' + (result ? result.reply : "对方似乎没有回应...") + '</div>';
+            }
+
+            document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+            isChatSending = false;
+            input.disabled = false;
+            input.focus();
+
+            if (result && result.game_state) {
+                renderGame(result.game_state);
+            }
+        }
+
+        document.getElementById("chat-input").addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // ==================== 灵石排行榜 ====================
+
+        function showRankingModal() {
+            document.getElementById("ranking-modal").classList.add("show");
+            loadRanking();
+        }
+
+        function closeRankingModal() {
+            document.getElementById("ranking-modal").classList.remove("show");
+        }
+
+        document.getElementById("ranking-modal").addEventListener("click", function(e) {
+            if (e.target === this) closeRankingModal();
+        });
+
+        async function loadRanking() {
+            const data = await apiGet("/api/ranking/spirit_stones");
+            const tbody = document.getElementById("ranking-body");
+            if (!data || !data.ranking) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#666;">加载失败</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.ranking.map(function(r, idx) {
+                const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : (idx + 1)));
+                return "<tr>" +
+                    '<td style="text-align:center;padding:6px;">' + medal + "</td>" +
+                    '<td style="text-align:left;padding:6px;">' + escapeHtml(r.username) + "</td>" +
+                    '<td style="text-align:center;padding:6px;color:#aaa;">' + escapeHtml(r.realm_name) + "</td>" +
+                    '<td style="text-align:right;padding:6px;color:#f0d070;">' + r.spirit_stones + "</td>" +
+                    "</tr>";
+            }).join("");
+        }
+
+        // ==================== 成就系统 ====================
+
+        function showAchievementModal() {
+            document.getElementById("achievement-modal").classList.add("show");
+            loadAchievements();
+        }
+
+        function closeAchievementModal() {
+            document.getElementById("achievement-modal").classList.remove("show");
+        }
+
+        document.getElementById("achievement-modal").addEventListener("click", function(e) {
+            if (e.target === this) closeAchievementModal();
+        });
+
+        async function loadAchievements() {
+            const body = document.getElementById("achievement-body");
+            try {
+                const data = await apiGet("/api/achievements");
+                if (!data || !data.achievements) {
+                    body.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">加载失败</div>';
+                    return;
+                }
+                const unlockedIds = new Set(data.player_achievements || []);
+                body.innerHTML = data.achievements.map(function(a) {
+                    const unlocked = unlockedIds.has(a.id);
+                    return '<div style="display:flex; align-items:flex-start; padding:12px 14px; margin-bottom:8px; border-radius:8px; background:' + (unlocked ? 'rgba(240,208,112,0.08)' : 'rgba(255,255,255,0.02)') + '; border:1px solid ' + (unlocked ? 'rgba(240,208,112,0.2)' : 'rgba(255,255,255,0.05)') + ';">' +
+                        '<div style="font-size:32px; margin-right:14px; opacity:' + (unlocked ? 1 : 0.3) + ';">' + a.icon + '</div>' +
+                        '<div style="flex:1; min-width:0;">' +
+                            '<div style="font-size:15px; font-weight:600; color:' + (unlocked ? '#f0d070' : '#888') + ';">' + a.name + ' ' + (unlocked ? '✅' : '🔒') + '</div>' +
+                            '<div style="font-size:12px; color:#aaa; margin:2px 0;">' + a.title + '</div>' +
+                            '<div style="font-size:13px; color:#777; margin:4px 0;">' + a.description + '</div>' +
+                            '<div style="font-size:12px; color:#555; font-style:italic;">达成条件：' + a.condition_desc + '</div>' +
+                        '</div>' +
+                    '</div>';
+                }).join("");
+            } catch (e) {
+                body.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">加载失败</div>';
+            }
+        }
+
+        // ==================== 成就通知 ====================
+
+        function showAchievementNotification(achievements) {
+            if (!achievements || achievements.length === 0) return;
+            const container = document.getElementById("achievement-notification");
+            const html = achievements.map(function(a) {
+                return '<div style="display:flex; align-items:center; gap:12px; margin-bottom:' + (achievements.length > 1 ? '8px' : '0') + ';">' +
+                    '<div style="font-size:28px;">' + a.icon + '</div>' +
+                    '<div>' +
+                        '<div style="color:#f0d070; font-weight:600; font-size:14px;">🏆 成就解锁！</div>' +
+                        '<div style="color:#ddd; font-size:13px;">' + a.name + '</div>' +
+                        '<div style="color:#aaa; font-size:12px;">' + a.title + '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join("");
+            container.innerHTML = html;
+            container.style.display = "block";
+            setTimeout(function() {
+                container.style.transition = "opacity 0.5s";
+                container.style.opacity = "0";
+                setTimeout(function() {
+                    container.style.display = "none";
+                    container.style.opacity = "1";
+                }, 500);
+            }, 4000);
+        }
+
+        // ==================== 随机事件弹窗 ====================
+
+        let currentRandomEvent = null;
+
+        function closeRandomEventModal() {
+            document.getElementById("random-event-modal").classList.remove("show");
+            currentRandomEvent = null;
+        }
+
+        function showRandomEventModal(randomEvent) {
+            if (!randomEvent) return;
+            currentRandomEvent = randomEvent;
+            document.getElementById("random-event-icon").textContent = randomEvent.icon || "📜";
+            document.getElementById("random-event-title").textContent = randomEvent.title || randomEvent.type || "随机事件";
+            document.getElementById("random-event-desc").textContent = randomEvent.message || randomEvent.description || "";
+            document.getElementById("random-event-reward").textContent = "";
+            document.getElementById("random-event-modal").classList.add("show");
+        }
+
+        // ==================== 生活事件 ====================
+
+        let currentLifeEvent = null;
+
+        function closeLifeEventModal() {
+            document.getElementById("life-event-modal").classList.remove("show");
+            currentLifeEvent = null;
+            document.getElementById("life-event-display").style.display = "block";
+            document.getElementById("life-event-result").style.display = "none";
+        }
+
+        document.getElementById("life-event-modal").addEventListener("click", function(e) {
+            if (e.target === this) closeLifeEventModal();
+        });
+
+        function showLifeEventModal(lifeEvent) {
+            if (!lifeEvent || !lifeEvent.event) return;
+            currentLifeEvent = lifeEvent.event;
+            const evt = lifeEvent.event;
+
+            document.getElementById("life-event-title").textContent = evt.name;
+            document.getElementById("life-event-icon").textContent = evt.icon || "📜";
+            document.getElementById("life-event-desc").textContent = evt.description;
+
+            const optionsDiv = document.getElementById("life-event-options");
+            if (evt.options && evt.options.length > 0) {
+                optionsDiv.innerHTML = evt.options.map(function(opt, idx) {
+                    return '<button class="event-btn" onclick="handleLifeEventChoice(' + idx + ')" style="text-align:left; padding:10px 14px;">' +
+                        '<div style="font-size:13px; color:#e0e0e0;">' + opt.text + '</div>' +
+                        '<div style="font-size:11px; color:#888; margin-top:2px;">属性对抗：' + opt.attr + '</div>' +
+                    '</button>';
+                }).join("");
+            } else {
+                optionsDiv.innerHTML = '<div style="color:#666; font-size:13px; text-align:center; padding:12px;">无可用选项</div>';
+            }
+
+            document.getElementById("life-event-custom-input").value = "";
+            document.getElementById("life-event-display").style.display = "block";
+            document.getElementById("life-event-result").style.display = "none";
+            document.getElementById("life-event-modal").classList.add("show");
+        }
+
+        async function handleLifeEventChoice(optionIndex) {
+            if (!currentLifeEvent) return;
+            closeLifeEventModal();
+
+            const result = await apiPost("/api/life_event/choice", {
+                event_id: currentLifeEvent.id,
+                choice_index: optionIndex
+            });
+
+            if (result && result.success) {
+                if (result.result) {
+                    const r = result.result;
+                    const isSuccess = r.success;
+                    document.getElementById("life-event-result-icon").textContent = isSuccess ? "🎉" : "😔";
+                    document.getElementById("life-event-comment").textContent = r.comment || "";
+                    document.getElementById("life-event-result-text").textContent = r.log || r.text || "";
+                    document.getElementById("life-event-result-text").style.color = isSuccess ? "#8d8" : "#e88";
+
+                    let rewardStr = "";
+                    if (r.rewards) {
+                        const parts = [];
+                        if (r.rewards.cultivation) parts.push("修为 +" + r.rewards.cultivation);
+                        if (r.rewards.spirit_stones) parts.push("灵石 +" + r.rewards.spirit_stones);
+                        if (r.rewards.intelligence) parts.push("智力 +" + r.rewards.intelligence);
+                        if (r.rewards.stamina) parts.push("体力 +" + r.rewards.stamina);
+                        if (r.rewards.strength) parts.push("力量 +" + r.rewards.strength);
+                        if (r.rewards.spirit) parts.push("精神 +" + r.rewards.spirit);
+                        if (r.rewards.good_evil) parts.push("善恶 " + (r.rewards.good_evil > 0 ? "+" : "") + r.rewards.good_evil);
+                        rewardStr = parts.join("，");
+                    }
+                    document.getElementById("life-event-reward-text").textContent = rewardStr ? "📈 " + rewardStr : "";
+
+                    document.getElementById("life-event-display").style.display = "none";
+                    document.getElementById("life-event-result").style.display = "block";
+                    document.getElementById("life-event-modal").classList.add("show");
+                }
+                if (result.game_state) {
+                    renderGame(result.game_state);
+                }
+                if (result.new_achievements && result.new_achievements.length > 0) {
+                    showAchievementNotification(result.new_achievements);
+                }
+            }
+        }
+
+        async function submitLifeEventCustomAction() {
+            const input = document.getElementById("life-event-custom-input");
+            const actionText = input.value.trim();
+            if (!actionText || !currentLifeEvent) return;
+            closeLifeEventModal();
+
+            const result = await apiPost("/api/life_event/choice", {
+                event_id: currentLifeEvent.id,
+                custom_action: actionText
+            });
+
+            if (result && result.success) {
+                if (result.result) {
+                    const r = result.result;
+                    const isSuccess = r.success;
+                    document.getElementById("life-event-result-icon").textContent = isSuccess ? "🎉" : "😔";
+                    document.getElementById("life-event-comment").textContent = r.comment || "";
+                    document.getElementById("life-event-result-text").textContent = r.log || r.text || "";
+                    document.getElementById("life-event-result-text").style.color = isSuccess ? "#8d8" : "#e88";
+
+                    let rewardStr = "";
+                    if (r.rewards) {
+                        const parts = [];
+                        if (r.rewards.cultivation) parts.push("修为 +" + r.rewards.cultivation);
+                        if (r.rewards.spirit_stones) parts.push("灵石 +" + r.rewards.spirit_stones);
+                        if (r.rewards.intelligence) parts.push("智力 +" + r.rewards.intelligence);
+                        if (r.rewards.stamina) parts.push("体力 +" + r.rewards.stamina);
+                        if (r.rewards.strength) parts.push("力量 +" + r.rewards.strength);
+                        if (r.rewards.spirit) parts.push("精神 +" + r.rewards.spirit);
+                        if (r.rewards.good_evil) parts.push("善恶 " + (r.rewards.good_evil > 0 ? "+" : "") + r.rewards.good_evil);
+                        rewardStr = parts.join("，");
+                    }
+                    document.getElementById("life-event-reward-text").textContent = rewardStr ? "📈 " + rewardStr : "";
+
+                    document.getElementById("life-event-display").style.display = "none";
+                    document.getElementById("life-event-result").style.display = "block";
+                    document.getElementById("life-event-modal").classList.add("show");
+                }
+                if (result.game_state) {
+                    renderGame(result.game_state);
+                }
+                if (result.new_achievements && result.new_achievements.length > 0) {
+                    showAchievementNotification(result.new_achievements);
+                }
+            }
+        }
+
+        // ==================== 工具函数 ====================
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            var div = document.createElement("div");
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        async function startNewGame() {
+            if (!confirm("确定要重新开始吗？当前进度将丢失！")) return;
+            const result = await apiPost("/api/new_game", {});
+            if (result && result.success) {
+                renderGame(result);
+            }
+        }
+
+        // ==================== 初始化 ====================
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if (INITIAL_STATE && INITIAL_STATE.phase && INITIAL_STATE.phase !== "login") {
+                renderGame(INITIAL_STATE);
+                fetchUsername();
+            } else {
+                if (INITIAL_STATE && INITIAL_STATE.phase === "login") {
+                    renderGame(INITIAL_STATE);
+                }
+            }
+            setInterval(pollGlobalEvents, 10000);
+        });
+    </script>
+</body>
+</html>

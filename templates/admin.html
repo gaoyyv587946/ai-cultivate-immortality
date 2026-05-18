@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 修仙人生</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { color: #f0d070; margin-bottom: 8px; }
+        .subtitle { color: #888; margin-bottom: 24px; }
+        .back-link { color: #7eb8da; text-decoration: none; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .stats-bar {
+            display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .stat-card {
+            background: #12122a; border: 1px solid #2a2a4e; border-radius: 8px;
+            padding: 16px 24px; text-align: center; min-width: 120px;
+        }
+        .stat-card .num { font-size: 28px; font-weight: bold; color: #f0d070; }
+        .stat-card .label { font-size: 13px; color: #888; margin-top: 4px; }
+        table {
+            width: 100%; border-collapse: collapse; background: #12122a;
+            border-radius: 8px; overflow: hidden;
+        }
+        th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #1e1e3a; font-size: 14px; }
+        th { background: #1a1a34; color: #aaa; font-weight: normal; }
+        tr:hover { background: #181838; }
+        .online-badge { color: #4caf50; font-weight: bold; }
+        .offline-badge { color: #888; }
+        .admin-badge { color: #f0d070; }
+        .limit-input { width: 60px; padding: 4px 6px; background: #1e1e3a; border: 1px solid #3a3a5e; color: #e0e0e0; border-radius: 4px; text-align: center; }
+        .btn-update { padding: 4px 10px; background: #2a4a6a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-update:hover { background: #3a6a8a; }
+        .dead-badge { color: #f44336; }
+        .alive-badge { color: #4caf50; }
+    </style>
+</head>
+<body>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h1>⚙ 管理后台</h1>
+        <a href="/game" class="back-link">← 返回游戏</a>
+    </div>
+    <div class="subtitle">欢迎，{{ username }}</div>
+
+    <div class="stats-bar" id="stats-bar">
+        <div class="stat-card">
+            <div class="num" id="total-users">0</div>
+            <div class="label">总用户数</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="online-count" style="color:#4caf50;">0</div>
+            <div class="label">当前在线</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="playing-count">0</div>
+            <div class="label">游戏中</div>
+        </div>
+    </div>
+
+    <div style="margin-bottom:16px; padding:12px 16px; background:#1a0a0a; border:1px solid #5a2a2a; border-radius:8px; display:flex; align-items:center; gap:16px;">
+        <span style="color:#f44336; font-weight:bold;">⚠ 危险操作</span>
+        <span style="color:#aaa; font-size:13px; flex:1;">清理后将清除所有玩家的游戏进度、NPC、全局事件等数据（保留用户账号）。此操作不可撤销！</span>
+        <button onclick="clearAllData()" style="padding:8px 20px; background:#6a1a1a; color:#fff; border:1px solid #a33; border-radius:4px; cursor:pointer; font-size:14px; font-weight:bold;">
+            🗑 一键清理所有用户数据
+        </button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>角色</th>
+                <th>境界</th>
+                <th>状态</th>
+                <th>在线</th>
+                <th>DeepSeek (今日/上限)</th>
+                <th>操作</th>
+                <th>管理</th>
+            </tr>
+        </thead>
+        <tbody id="user-table-body">
+        </tbody>
+    </table>
+
+    <script>
+        async function loadUsers() {
+            try {
+                const resp = await fetch('/api/admin/users');
+                if (resp.status === 403) {
+                    document.body.innerHTML = '<p style="color:red;padding:40px;">无管理员权限</p>';
+                    return;
+                }
+                const users = await resp.json();
+                renderUsers(users);
+            } catch (e) {
+                console.error('加载用户列表失败', e);
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('user-table-body');
+            let onlineCount = 0;
+            let playingCount = 0;
+
+            tbody.innerHTML = users.map(u => {
+                const isOnline = u.is_online;
+                if (isOnline) onlineCount++;
+                if (u.realm_level) playingCount++;
+
+                return `<tr>
+                    <td>${u.id}</td>
+                    <td>${u.username}${u.is_admin ? ' <span class="admin-badge">👑</span>' : ''}</td>
+                    <td>${u.realm_name || '-'}</td>
+                    <td>${u.realm_level ? 'Lv.' + u.realm_level : '-'}</td>
+                    <td>${u.is_alive === null ? '-' : (u.is_alive ? '<span class="alive-badge">● 存活</span>' : '<span class="dead-badge">✖ 已陨落</span>')}</td>
+                    <td>${isOnline ? '<span class="online-badge">● 在线</span>' : '<span class="offline-badge">○ 离线</span>'}</td>
+                    <td>
+                        <input type="number" class="limit-input" id="limit-${u.id}" value="${u.deepseek_calls_today || 0}" readonly> /
+                        <input type="number" class="limit-input" id="limit-max-${u.id}" value="${u.deepseek_daily_limit || 50}">
+                    </td>
+                    <td>
+                        <button class="btn-update" onclick="setLimit(${u.id})">更新上限</button>
+                    </td>
+                    <td>
+                        <button class="btn-update" onclick="resetPassword(${u.id})">重置密码</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('total-users').textContent = users.length;
+            document.getElementById('online-count').textContent = onlineCount;
+            document.getElementById('playing-count').textContent = playingCount;
+        }
+
+        async function setLimit(userId) {
+            const limitInput = document.getElementById('limit-max-' + userId);
+            const newLimit = parseInt(limitInput.value);
+            if (isNaN(newLimit) || newLimit < 0) {
+                alert('请输入有效的数字');
+                return;
+            }
+            try {
+                const resp = await fetch('/api/admin/set_deepseek_limit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, limit: newLimit })
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    alert('更新成功');
+                } else {
+                    alert('更新失败: ' + (result.error || ''));
+                }
+            } catch (e) {
+                alert('请求失败');
+            }
+        }
+
+        async function resetPassword(userId) {
+            const newPw = prompt('请输入新密码（至少4位）：');
+            if (!newPw || newPw.length < 4) {
+                alert('密码长度不能少于4位');
+                return;
+            }
+            try {
+                const resp = await fetch('/api/admin/change_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, new_password: newPw })
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    alert('密码重置成功');
+                } else {
+                    alert('重置失败: ' + (result.error || ''));
+                }
+            } catch (e) {
+                alert('请求失败');
+            }
+        }
+
+        async function clearAllData() {
+            if (!confirm('⚠ 确定要清除所有用户数据吗？\\n\\n此操作将清除：\\n- 所有玩家的游戏进度\\n- 所有NPC数据\\n- 所有全局事件记录\\n\\n用户账号将被保留。\\n\\n此操作不可撤销！')) {
+                return;
+            }
+            if (!confirm('再次确认：真的要清除所有用户数据吗？')) {
+                return;
+            }
+            try {
+                const resp = await fetch('/api/admin/clear_all_data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    alert('✅ 所有用户数据已清除');
+                    loadUsers();
+                } else {
+                    alert('❌ 清除失败: ' + (result.error || ''));
+                }
+            } catch (e) {
+                alert('请求失败');
+            }
+        }
+
+        loadUsers();
+        setInterval(loadUsers, 10000);
+    </script>
+</body>
+</html>
