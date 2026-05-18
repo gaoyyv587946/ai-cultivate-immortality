@@ -776,6 +776,7 @@ class GameEngine:
             "reply": reply,
             "tone_description": tone_description,
             "relationship_change": relationship_change,
+            "new_relationship": npc["relationship"] + relationship_change,
             "cultivation_change": cultivation_change,
             "lifespan_cost": lifespan_cost,
             "special_effect": special_effect,

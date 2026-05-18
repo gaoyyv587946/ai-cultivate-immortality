@@ -3,7 +3,7 @@
 """
 
 # ==================== DeepSeek API 配置 ====================
-# 在这里填入你的 DeepSeek API Key
+# 在这里填入你的 DeepSeek API Key your-api-key-here
 DEEPSEEK_API_KEY = "your-api-key-here"
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 DEEPSEEK_MODEL = "deepseek-chat"

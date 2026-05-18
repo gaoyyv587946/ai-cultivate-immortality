@@ -29,7 +29,7 @@ from game.achievements import ACHIEVEMENTS, check_all_achievements
 from game.database import get_all_achievements, get_player_achievements
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
-# 随机密钥，用于session加密（本地游戏，固定即可）
+# 随机密钥，用于session加密（本地游戏，固定即可）your-api-key-here
 app.secret_key = "your-api-key-here"
 
 # 确保数据库已初始化
@@ -549,6 +549,56 @@ def get_npc_conversations(npc_id: int):
     })
 
 
+@app.route("/api/npc/<int:npc_id>/chat", methods=["GET"])
+def get_npc_chat(npc_id: int):
+    """获取NPC对话历史（前端兼容路由）"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "未登录"}), 401
+    npc = get_npc_by_id(npc_id)
+    if not npc:
+        return jsonify({"error": "NPC不存在"}), 404
+    if npc["user_id"] != user_id:
+        return jsonify({"error": "无权访问"}), 403
+    conversations = get_conversation_history(user_id, npc_id, 50)
+    messages = [
+        {"role": "user" if c["sender"] == "player" else "assistant", "content": c["content"]}
+        for c in conversations
+    ]
+    return jsonify({"messages": messages})
+
+
+@app.route("/api/npc/chat", methods=["POST"])
+def npc_chat():
+    """与NPC聊天（前端兼容路由，npc_id在body中）"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "未登录"}), 401
+
+    data = request.get_json()
+    npc_id = data.get("npc_id")
+    message = data.get("message", "")
+    if not npc_id:
+        return jsonify({"error": "缺少npc_id"}), 400
+    if not message.strip():
+        return jsonify({"success": False, "message": "请输入要说的话"})
+
+    npc = get_npc_by_id(npc_id)
+    if not npc:
+        return jsonify({"error": "NPC不存在"}), 404
+    if npc["user_id"] != user_id:
+        return jsonify({"error": "无权访问"}), 403
+
+    engine = get_engine()
+    if not engine:
+        return jsonify({"error": "游戏尚未开始"}), 400
+
+    result = engine.interact_with_npc(npc_id, message)
+    if "game_state" in result:
+        enrich_state(result["game_state"])
+    return jsonify(result)
+
+
 @app.route("/api/npc/<int:npc_id>/interact", methods=["POST"])
 def interact_npc(npc_id: int):
     """与NPC主动交流"""
@@ -757,7 +807,7 @@ def life_event_choice():
 
     data = request.get_json()
     event_id = data.get("event_id")
-    option_index = data.get("option_index")
+    option_index = data.get("choice_index")
     custom_action = data.get("custom_action", "")
 
     event = get_event_by_id(event_id)
@@ -766,32 +816,50 @@ def life_event_choice():
 
     npcs = get_npcs_for_display(engine.user_id)
 
-    if custom_action and option_index == -1:
-        from .game.deepseek import get_deepseek_response
-        prompt = f"玩家在'{event['name']}'事件中决定：{custom_action}。请以天道法则判定结果，用一句话描述。"
-        ai_result = get_deepseek_response(prompt)
-        result = {
-            "log": ai_result,
+    try:
+        if custom_action and option_index == -1:
+            from .game.deepseek import call_deepseek
+            ai_result = call_deepseek(
+                action_text=custom_action,
+                player_realm_name=engine.player.realm_name,
+                player_school=engine.player.school_name,
+                realm_description="",
+                event_context=f"生活事件：{event['name']} - {event['description']}",
+                user_id=engine.user_id,
+                player_good_evil=engine.player.good_evil,
+                player_dao_heart=engine.player.dao_heart,
+                player_spirit_stones=engine.player.spirit_stones
+            )
+            if ai_result and isinstance(ai_result, dict):
+                log_text = ai_result.get("log", ai_result.get("description", "天道未降下启示。"))
+            else:
+                log_text = "天道未降下启示。"
+            result = {
+                "log": log_text,
+                "success": True,
+                "rewards": {}
+            }
+        elif option_index >= 0:
+            result = resolve_event_option(event, option_index, engine.player, npcs)
+        else:
+            return jsonify({"success": False, "error": "无效的选择"}), 400
+
+        engine.save()
+
+        new_achievements = engine._check_achievements()
+        life_event = engine._trigger_life_event()
+
+        return jsonify({
             "success": True,
-            "rewards": {}
-        }
-    elif option_index >= 0:
-        result = resolve_event_option(event, option_index, engine.player, npcs)
-    else:
-        return jsonify({"success": False, "error": "无效的选择"}), 400
-
-    engine.save()
-
-    new_achievements = engine._check_achievements()
-    life_event = engine._trigger_life_event()
-
-    return jsonify({
-        "success": True,
-        "result": result,
-        "player": engine.player.to_dict(),
-        "new_achievements": new_achievements,
-        "life_event": life_event
-    })
+            "result": result,
+            "player": engine.player.to_dict(),
+            "new_achievements": new_achievements,
+            "life_event": life_event
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": f"服务器内部错误：{str(e)}"}), 500
 
 
 # ==================== 成就系统 ====================
